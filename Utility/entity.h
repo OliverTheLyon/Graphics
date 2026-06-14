@@ -13,6 +13,9 @@ namespace OKengine {
         glm::vec3 curr_pos;         //current centroid position
 
         public:
+
+        static constexpr glm::vec3 DEFAULT_LOCATION = glm::vec3(0.0f);
+
         /**
          * generic constructor
          */
