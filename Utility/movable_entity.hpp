@@ -16,10 +16,30 @@ namespace OKengine {
         float mass;                 //used for force calculations
 
     public:
+        static constexpr float DEFAULT_MASS = 1.0f;
+        static constexpr glm::vec3 DEFAULT_ACCELERATION = glm::vec3(0.0f);
+        static constexpr float FORCE_REDUCTION = 0.9f;
+
         /**
          * constructor, initializes all parameters except mesh
          */
         movable_entity();
+
+        /**
+         * constructor, initializes all parameters except mesh
+         * @param position the entities location
+         */
+        movable_entity(glm::vec3 position);
+
+        /**
+         * constructor, initializes all parameters
+         */
+        movable_entity(glm::vec3 position, std::shared_ptr<mesh> new_mesh);
+
+        /**
+         * constructor, initializes all parameters
+         */
+        movable_entity(glm::vec3 curr_position, glm::vec3 last_position, std::shared_ptr<mesh> new_mesh);
 
         /**
          * constructor, initializes all parameters
@@ -37,13 +57,6 @@ namespace OKengine {
          * @param force (x,y,z) vector showing direction and intensity of force on entity
          */
         void add_force(const glm::vec3 &force);
-
-        /**
-         * Description: Used to assign the current location entity directly.
-         * Throws: Invalid Location, Overflow check, Speed Trap
-         * @param position (x,y,z) vector showing location for the centroid to be placed
-         */
-        void set_curr_position(glm::vec3 position);
 
         /**
          * Description: Used to assign the previous location of the entity directly. Used to force velocity
@@ -71,7 +84,7 @@ namespace OKengine {
          * Throws: Invalid Input (negative floats, 0 and inf)
          * @param mass float, new mass of entity (probably do unsinged int and convert when needed)
          */
-        void set_mass(float mass);
+        void set_mass(float new_mass);
 
         /**
          * Description: Sets the Mesh of the entity.
@@ -79,12 +92,6 @@ namespace OKengine {
          * @param new_mesh shared pointer to mesh class
          */
         void set_mesh(std::shared_ptr<mesh> new_mesh);
-
-        /**
-         * Description: Gets current (x,y,z) position of the entity.
-         * @return pointer to (x,y,z) the current position of the entity.
-         */
-        glm::vec3* get_curr_position();
 
         /**
          * Description: Gets last (x,y,z) position of the entity.
@@ -104,10 +111,5 @@ namespace OKengine {
          */
         float      get_mass();
 
-        /**
-         * Description: Gets weak point to the mesh of the entity.
-         * @return weak pointer to mesh of the entity.
-         */
-        std::weak_ptr<mesh> get_mesh();
     };
 }

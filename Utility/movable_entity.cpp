@@ -3,95 +3,83 @@
 namespace OKengine {
 
         movable_entity::movable_entity() {
-
+                last_pos = OKengine::entity::DEFAULT_LOCATION;
+                acceleration = DEFAULT_ACCELERATION;
+                mass = DEFAULT_MASS;
+                set_curr_position(glm::vec3(0.0f));
         }
 
-        /**
-         * constructor, initializes all parameters
-         */
-        movable_entity(std::shared_ptr<mesh> new_mesh);
+        movable_entity::movable_entity(glm::vec3 position) {
+                last_pos = position;
+                acceleration = DEFAULT_ACCELERATION;
+                mass = DEFAULT_MASS;
+                set_curr_position(position);
+        }
 
-        /**
-         * placeholder for if entities have any memory ownership
-         */
-        ~movable_entity(){};
+        movable_entity::movable_entity(glm::vec3 position, std::shared_ptr<mesh> new_mesh) {
+                last_pos = position;
+                acceleration = DEFAULT_ACCELERATION;
+                mass = DEFAULT_MASS;
+                set_curr_position(position);
+                set_mesh(new_mesh);
+        }
 
-        /**
-         * Description: This is a shorthand used to add forces to the object (collision)
-         * Throws: invalid location, overflow catch
-         * @param force (x,y,z) vector showing direction and intensity of force on entity
-         */
-        void add_force(const glm::vec3 &force);
+        movable_entity::movable_entity(glm::vec3 curr_position, glm::vec3 last_position, std::shared_ptr<mesh> new_mesh) {
+                last_pos = last_position;
+                acceleration = DEFAULT_ACCELERATION;
+                mass = DEFAULT_MASS;
+                set_curr_position(curr_position);
+        }
 
-        /**
-         * Description: Used to assign the current location entity directly.
-         * Throws: Invalid Location, Overflow check, Speed Trap
-         * @param position (x,y,z) vector showing location for the centroid to be placed
-         */
-        void set_curr_position(glm::vec3 position);
 
-        /**
-         * Description: Used to assign the previous location of the entity directly. Used to force velocity
-         * Throws: Invalid Location, Overflow check, Speed Trap
-         * @param position (x,y,z) vector showing location for the centroid was last placed
-         */
-        void set_last_position(glm::vec3 position);
+        movable_entity::movable_entity(std::shared_ptr<mesh> new_mesh) {
+                last_pos = OKengine::entity::DEFAULT_LOCATION;
+                acceleration = DEFAULT_ACCELERATION;
+                mass = DEFAULT_MASS;
+                set_curr_position(OKengine::entity::DEFAULT_LOCATION);
+        }
 
-        /**
-         * Description: Used to assign the current and previous location of the entity directly.
-         * Throws: Invalid Location
-         * @param position (x,y,z) vector showing location for the centroid will be placed
-         */
-        void set_position(glm::vec3 position);
+        void movable_entity::add_force(const glm::vec3 &force) {
+                //TODO Determine how much force should be applied (multiplicative adjustment)
+                acceleration += (FORCE_REDUCTION *  force);
+        }
 
-        /**
-         * Description: Sets the acceleration of the entity.
-         * Throws: Overflow check, Speed Trap
-         * @param new_acceleration
-         */
-        void set_acceleration(glm::vec3 new_acceleration);
+        void movable_entity::set_last_position(glm::vec3 position) {
+                //TODO SET Invalid Location, Overflow check, Speed Trap
+                last_pos = position;
+        }
 
-        /**
-         * Description: Sets the acceleration of the entity.
-         * Throws: Invalid Input (negative floats, 0 and inf)
-         * @param mass float, new mass of entity (probably do unsinged int and convert when needed)
-         */
-        void set_mass(float mass);
+        void movable_entity::set_position(glm::vec3 position) {
+                //TODO CHECK VALID LOCATION
+                set_curr_position(position);
+                set_last_position(position);
+        }
 
-        /**
-         * Description: Sets the Mesh of the entity.
-         * Throws: Invalid Input (check mesh is fully computable)
-         * @param new_mesh shared pointer to mesh class
-         */
-        void set_mesh(std::shared_ptr<mesh> new_mesh);
+        void movable_entity::set_acceleration(glm::vec3 new_acceleration) {
+                //TODO CHECK Overflow check, Speed Trap
+                acceleration = new_acceleration;
+        }
 
-        /**
-         * Description: Gets current (x,y,z) position of the entity.
-         * @return pointer to (x,y,z) the current position of the entity.
-         */
-        glm::vec3* get_curr_position();
+        void movable_entity::set_mass(float new_mass) {
+                //TODO Invalid Input (negative floats, 0 and inf)
+                mass = new_mass;
+        }
 
-        /**
-         * Description: Gets last (x,y,z) position of the entity.
-         * @return pointer to (x,y,z) last position of the entity.
-         */
-        glm::vec3* get_last_position();
+        void movable_entity::set_mesh(std::shared_ptr<mesh> new_mesh) {
+                //TODO Invalid Input (check mesh is fully computable)
+                mesh = new_mesh;
+        }
 
-        /**
-         * Description: Gets (x,y,z) acceleration of the entity.
-         * @return pointer to (x,y,z) acceleration of the entity.
-         */
-        glm::vec3* get_acceleration();
+        glm::vec3* movable_entity::get_last_position() {
+                return(&last_pos);
+        }
 
-        /**
-         * Description: Gets mass of the entity.
-         * @return float mass
-         */
-        float      get_mass();
+        glm::vec3* movable_entity::get_acceleration() {
+              return(&acceleration);
+        }
 
-        /**
-         * Description: Gets weak point to the mesh of the entity.
-         * @return weak pointer to mesh of the entity.
-         */
-        std::weak_ptr<mesh> get_mesh();
+        float movable_entity::get_mass() {
+                return(mass);
+        }
+
 }
