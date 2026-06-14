@@ -1,9 +1,12 @@
 
+#include "texture.hpp"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
 
-#include <iterator>
+#include <exception>
+#include <glm/detail/qualifier.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <string>
 #include <utility>
@@ -17,13 +20,14 @@ using std::vector;
 
 mesh::~mesh(){
 	Logger::GetInstance().log("[mesh::~mesh] begin", debug_level::DEBUG);
-	glDeleteBuffers(1, &vao);
+	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ebo);
+	glDeleteBuffers(1, &tbo);
 }
 
-mesh::mesh(vector<float> verts, vector<GLuint> idxs): vertices(verts), indeces(idxs){
-	Logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs) with " + std::to_string(verts.size()) + " vertices and " + std::to_string(idxs.size()) + " indices", debug_level::DEBUG);
+mesh::mesh(vector<float> verts, vector<GLuint> idxs): vertex_coords(verts), vertex_indices(idxs){
+	Logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs) with " + std::to_string(verts.size()) + " vertex_coords and " + std::to_string(idxs.size()) + " indices", debug_level::DEBUG);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
@@ -31,20 +35,22 @@ mesh::mesh(vector<float> verts, vector<GLuint> idxs): vertices(verts), indeces(i
 	upload();
 }
 
-mesh::mesh(vector<float> verts, vector<GLuint>idxs, string path): vertices(verts), indeces(idxs), tex(std::make_unique<texture>(path)){
+mesh::mesh(vector<float> verts, vector<GLuint>idxs, string path): vertex_coords(verts), vertex_indices(idxs), tex(std::make_unique<texture>(path)){
 	Logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs+path) path: " + path, debug_level::DEBUG);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
+	glGenBuffers(1, &tbo);
 	model_matrix = glm::mat4(1.);
 	upload();
 }
 
-mesh::mesh(mesh && other) noexcept: vertices(other.vertices), indeces(other.indeces), vao(other.vao), vbo(other.vbo), ebo(other.ebo), model_matrix(other.model_matrix){
+mesh::mesh(mesh && other) noexcept: normal_coords(other.normal_coords), normal_indices(other.normal_indices), texture_coords(other.texture_coords), texture_indices(other.texture_indices), vertex_coords(other.vertex_coords), vertex_indices(other.vertex_indices), vao(other.vao), vbo(other.vbo), ebo(other.ebo), tbo(other.tbo), model_matrix(other.model_matrix){
 	Logger::GetInstance().log("[mesh::mesh] move constructor", debug_level::DEBUG);
 	other.vao = 0;
 	other.vbo = 0;
 	other.ebo = 0;
+	other.tbo = 0;
 
 	if(other.tex != nullptr){
 		tex = std::move(other.tex);
@@ -55,8 +61,6 @@ mesh::mesh(mesh && other) noexcept: vertices(other.vertices), indeces(other.inde
 		shader_prog = std::move(other.shader_prog);
 		other.shader_prog = nullptr;
 	}
-	upload();
-
 }
 
 
@@ -77,99 +81,120 @@ bool load_obj(string path, obj& outputs){
 		file.getline(line, 200, '\n');
 		contents = string(line);
 
-		if(contents.find("vt" == 0)){
+		if(contents[0] == '#'){
+			continue;
+		}
+		else if(contents.find("vt",0) == 0){
+			Logger::GetInstance().log("[load_obj] vertex texture: "+ contents, debug_level::DEBUG);
 
-			int start_x = contents.find_first_of(' ', 1);
-			int end_x = contents.find_first_of(' ', start_x);
+			int start_x = contents.find_first_of(' ', 0) + 1;;
+			int end_x = contents.find_first_of(' ', start_x) -1;
 			x = std::stof(contents.substr(start_x, end_x - start_x));
 
-			int start_y = end_x + 1;
-			int end_y = contents.find_first_of(' ', start_y);
-			y = std::stof(contents.substr(start_y,end_y));
+			int start_y = end_x + 2;
+			int end_y = contents.find_first_of(' ', start_y) -1;
+			y = std::stof(contents.substr(start_y,end_y - start_y));
 
 			outputs.uvs.push_back(x);
 			outputs.uvs.push_back(y);
 		}
-		else if(contents.find("nv") == 0){
-			int start_x = contents.find_first_of(' ', 1);
-			int end_x = contents.find_first_of(' ', start_x);
+		else if(contents.find("vn",0) == 0){
+			Logger::GetInstance().log("[load_obj] vertex normal: "+ contents, debug_level::DEBUG);
+			int start_x = contents.find_first_of(' ', 0) + 1;
+			int end_x = contents.find_first_of(' ', start_x) - 1;
 			x = std::stof(contents.substr(start_x, end_x - start_x));
 
-			int start_y = end_x + 1;
-			int end_y = contents.find_first_of(' ', start_y);
-			y = std::stof(contents.substr(start_y,end_y));
+			int start_y = end_x + 2;
+			int end_y = contents.find_first_of(' ', start_y) - 1;
+			y = std::stof(contents.substr(start_y,end_y - start_y));
 			
-			int start_z = end_y + 1;
-			int end_z = contents.find_first_of(' ', start_z);
-			z = std::stof(contents.substr(start_z, end_z));
+			int start_z = end_y + 2;
+			int end_z = contents.find_first_of(' ', start_z) - 1;
+			z = std::stof(contents.substr(start_z, end_z - start_z));
 			outputs.normals.push_back(x);
 			outputs.normals.push_back(y);
 			outputs.normals.push_back(z);
 		}
-		else if(contents.find("v") == 0){
-			int start_x = contents.find_first_of(' ', 1);
-			int end_x = contents.find_first_of(' ', start_x);
+		else if(contents.find("v",0) == 0){
+			Logger::GetInstance().log("[load_obj] vertex: "+ contents, debug_level::DEBUG);
+			int start_x = contents.find_first_of(' ', 0) + 1;
+			int end_x = contents.find_first_of(' ', start_x) - 1;
 			x = std::stof(contents.substr(start_x, end_x - start_x));
 
-			int start_y = end_x + 1;
-			int end_y = contents.find_first_of(' ', start_y);
-			y = std::stof(contents.substr(start_y,end_y));
+			int start_y = end_x + 2;
+			int end_y = contents.find_first_of(' ', start_y) - 1;
+			y = std::stof(contents.substr(start_y,end_y-start_y));
 			
-			int start_z = end_y + 1;
-			int end_z = contents.find_first_of(' ', start_z);
-			z = std::stof(contents.substr(start_z, end_z));
+			int start_z = end_y + 2;
+			int end_z = contents.find_first_of(' ', start_z) - 1;
+			z = std::stof(contents.substr(start_z, end_z - start_z));
 			outputs.vertices.push_back(x);
 			outputs.vertices.push_back(y);
 			outputs.vertices.push_back(z);
 		}
-		else if(contents.find("f") == 0){
-			int start_x = contents.find_first_of(' ', 1);
-			int end_x = contents.find_first_of('/', start_x);
-			x = std::stoi(contents.substr(start_x, end_x - start_x));
+		else if(contents.find("f",0) == 0){
+			glm::vec3 verts(-1), texs(-1), norms(-1);
+			Logger::GetInstance().log("[load_obj] face: "+ contents, debug_level::DEBUG);
+			int start_x = contents.find_first_of(' ', 0)+1;
+			int end_x = contents.find_first_of('/', start_x) - 1;
+			verts[0] = std::stoi(contents.substr(start_x, end_x - start_x));
 
-			int start_y = end_x + 1;
-			int end_y = contents.find_first_of('/', start_y);
-			y = std::stoi(contents.substr(start_y,end_y));
+			int start_y = end_x + 2;
+			int end_y = contents.find_first_of('/', start_y) - 1;
+			if(start_y < end_y - 1){  
+				texs[0] = std::stoi(contents.substr(start_y,end_y - start_y));
+			}
 			
-			int start_z = end_y + 1;
-			int end_z = contents.find_first_of(' ', start_z);
-			z = std::stoi(contents.substr(start_z, end_z));
+			int start_z = end_y + 2;
+			int end_z = contents.find_first_of(' ', start_z) - 1;
+			norms[0] = std::stoi(contents.substr(start_z, end_z - start_z));
 
-			outputs.v_idxs.push_back(x);
-			outputs.v_idxs.push_back(y);
-			outputs.v_idxs.push_back(z);
 
-			start_x = contents.find_first_of(' ', end_z);
-			end_x = contents.find_first_of('/', start_x);
-			x = std::stoi(contents.substr(start_x, end_x - start_x));
+			start_x = contents.find_first_of(' ', end_z) + 1;
+			end_x = contents.find_first_of('/', start_x) - 1;
+			verts[1] = std::stoi(contents.substr(start_x, end_x - start_x));
 
-			start_y = end_x + 1;
-			end_y = contents.find_first_of('/', start_y);
-			y = std::stoi(contents.substr(start_y,end_y));
+			start_y = end_x + 2;
+			end_y = contents.find_first_of('/', start_y) - 1;
+			if(start_y < end_y - 1){  
+				texs[1] = std::stoi(contents.substr(start_y,end_y - start_y));
+			}
 			
-			start_z = end_y + 1;
-			end_z = contents.find_first_of(' ', start_z);
-			z = std::stoi(contents.substr(start_z, end_z));
+			start_z = end_y + 2;
+			end_z = contents.find_first_of(' ', start_z) - 1;
+			norms[1] = std::stoi(contents.substr(start_z, end_z - start_y));
 
-			outputs.uv_idxs.push_back(x);
-			outputs.uv_idxs.push_back(y);
-			outputs.uv_idxs.push_back(z);
 
-			start_x = contents.find_first_of(' ', end_z);
-			end_x = contents.find_first_of('/', start_x);
-			x = std::stoi(contents.substr(start_x, end_x - start_x));
+			start_x = contents.find_first_of(' ', end_z) + 1;
+			end_x = contents.find_first_of('/', start_x) - 1;
+			verts[2] = std::stoi(contents.substr(start_x, end_x - start_x));
 
-			start_y = end_x + 1;
-			end_y = contents.find_first_of('/', start_y);
-			y = std::stoi(contents.substr(start_y,end_y));
+			start_y = end_x + 2;
+			end_y = contents.find_first_of('/', start_y) - 1;
+			if(start_y < end_y - 1){  
+				texs[2] = std::stoi(contents.substr(start_y,end_y - start_y));
+			}
 			
-			start_z = end_y + 1;
-			end_z = contents.find_first_of(' ', start_z);
-			z = std::stoi(contents.substr(start_z, end_z));
+			start_z = end_y + 2;
+			end_z = contents.find_first_of(' ', start_z) - 1;
+			norms[2] = std::stoi(contents.substr(start_z, end_z - start_z));
 
-			outputs.uv_idxs.push_back(x);
-			outputs.uv_idxs.push_back(y);
-			outputs.uv_idxs.push_back(z);
+			outputs.v_idxs.push_back(verts[0] - 1);
+			outputs.v_idxs.push_back(verts[1] - 1);
+			outputs.v_idxs.push_back(verts[2] - 1);
+			
+			if(texs != glm::vec3(-1)){
+				outputs.uv_idxs.push_back(texs[0] - 1);
+				outputs.uv_idxs.push_back(texs[1] - 1);
+				outputs.uv_idxs.push_back(texs[2] - 1);
+			}
+
+			outputs.n_idxs.push_back(norms[0] - 1);
+			outputs.n_idxs.push_back(norms[1] - 1);
+			outputs.n_idxs.push_back(norms[2] - 1);
+		}
+		else {
+			continue;
 		}
 	}
 
@@ -185,10 +210,29 @@ bool load_obj(string path, obj& outputs){
 mesh::mesh(string path){
 
 	obj res;
-	if(!load_obj(path, res)){
-		Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR)
-	}
+	try{  
+		if(!load_obj(path, res)){
+			Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR);
+		}
+		glGenVertexArrays(1, &vao);
+		glGenBuffers(1, &vbo);
+		glGenBuffers(1, &ebo);
+		glGenBuffers(1, &tbo);
+		vertex_coords = vector<float>(res.vertices);
+		vertex_indices = vector<GLuint>(res.v_idxs);
 
+		texture_coords = vector<float>(res.uvs);
+		texture_indices = vector<GLuint>(res.uv_idxs);
+
+		normal_coords = vector<float>(res.normals);
+		normal_indices = vector<GLuint>(res.n_idxs);
+
+		bind();
+
+	}
+	catch(std::exception e){
+		Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path + "\n\t" + e.what(), debug_level::ERROR);
+	}
 }
 
 
@@ -205,15 +249,17 @@ bool mesh::upload(){
 	
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_coords.size(), &vertex_coords[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,stride, (void*)0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indeces.size(), &indeces[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * vertex_indices.size(), &vertex_indices[0], GL_STATIC_DRAW);
 
 	if(tex != nullptr){
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3*sizeof(float)));
+		glBindBuffer(GL_ARRAY_BUFFER, tbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * texture_coords.size(), &texture_coords[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (void*)0);
 	}
 	return true;
 }
@@ -225,7 +271,6 @@ bool mesh::bind(){
 		tex->bind();
 	}
 	glBindVertexArray(vao);
-
 	return true;
 }
 
@@ -242,13 +287,22 @@ void mesh::setShader(std::unique_ptr<class shader> s){
 }
 
 
+void mesh::setTexture(texture && t){
+	tex = std::make_unique<texture>(std::move(t));
+}
+
+
+void mesh::setTexture(std::unique_ptr<texture> t){
+	tex = std::move(t);
+}
+
 bool mesh::draw(){
 	Logger::GetInstance().log("[mesh::draw] begin", debug_level::DEBUG);
 	if(shader_prog != nullptr){
 		shader_prog->use();
 	}
 	bind();
-	glDrawElements(GL_TRIANGLES, indeces.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, vertex_indices.size(), GL_UNSIGNED_INT, 0);
 	return true;
 };
 
@@ -256,12 +310,12 @@ bool mesh::operator==(const mesh& other) const{
 	Logger::GetInstance().log("[mesh::operator==] begin", debug_level::DEBUG);
 	bool verts = true;
 	bool inds = true;
-	for(int i = 0; i < vertices.size() && verts; i +=1){
-		verts = vertices[i] == other.vertices[i];
+	for(int i = 0; i < vertex_coords.size() && verts; i +=1){
+		verts = vertex_coords[i] == other.vertex_coords[i];
 	}
 
-	for(int i = 0; i < indeces.size() && inds; i += 1){
-		inds = indeces[i] == other.indeces[i];
+	for(int i = 0; i < vertex_coords.size() && inds; i += 1){
+		inds = vertex_indices[i] == other.vertex_indices[i];
 	}
 
 	return verts && inds;

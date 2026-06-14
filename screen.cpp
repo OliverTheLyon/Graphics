@@ -45,7 +45,7 @@ void screen::init(int w, int h, const string& title){
 	}
 
 	glfwSetInputMode(window.get(), GLFW_STICKY_KEYS, GL_TRUE);
-	glClearColor(0, 0, 0, 1);
+	glClearColor(1, 1, 1, 1);
 	glEnable(GL_BLEND);
 	
 	glEnable(GL_DEPTH_TEST);

@@ -27,8 +27,14 @@ typedef struct obj obj;
 class mesh{
 
 	private:
-		std::vector<float> vertices;
-		std::vector<GLuint> indeces;
+		std::vector<float> vertex_coords;
+		std::vector<GLuint> vertex_indices;
+
+		std::vector<float> texture_coords;
+		std::vector<GLuint> texture_indices;
+
+		std::vector<float> normal_coords;
+		std::vector<GLuint> normal_indices;
 
 		std::unique_ptr<texture> tex;
 		std::unique_ptr<shader> shader_prog;
@@ -36,6 +42,7 @@ class mesh{
 		GLuint vao;
 		GLuint vbo;
 		GLuint ebo;
+		GLuint tbo;
 
 		glm::mat4 model_matrix;
 
@@ -52,6 +59,9 @@ class mesh{
 
 		void setShader(shader&& s);
 		void setShader(std::unique_ptr<class shader> s);
+
+		void setTexture(texture &&t);
+		void setTexture(std::unique_ptr<texture> t);
 
 		bool draw();
 
