@@ -1,7 +1,7 @@
 
 #include "screen.hpp"
 #include "mesh.hpp"
-#include "Logger.hpp"
+#include "logger.hpp"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -12,10 +12,10 @@ using std::string;
 
 
 void screen::init(int w, int h, const string& title){
-	Logger::GetInstance().log("[screen::init] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::init] begin", debug_level::DEBUG);
 
 	if(!glfwInit()){
-		Logger::GetInstance().log("[screen::init]: failed to initialize glfw", debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[screen::init]: failed to initialize glfw", debug_level::ERROR);
 		glfwTerminate();
 		return;
 	}
@@ -29,7 +29,7 @@ void screen::init(int w, int h, const string& title){
 	window.reset(glfwCreateWindow(w, h, title.c_str(), NULL, NULL));
 
 	if(window == nullptr){
-		Logger::GetInstance().log("[screen::init] Failed to create window", debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[screen::init] Failed to create window", debug_level::ERROR);
 		glfwTerminate();
 		return;
 	}
@@ -39,7 +39,7 @@ void screen::init(int w, int h, const string& title){
 	glewExperimental = GL_TRUE;
 	const GLenum err = glewInit(); 
 	if(err != GLEW_OK){
-	Logger::GetInstance().log("[screen::init] unable to initialize glew: " + string(reinterpret_cast<const char*>( glewGetErrorString(err) )), debug_level::ERROR);
+	OKengine::logger::GetInstance().log("[screen::init] unable to initialize glew: " + string(reinterpret_cast<const char*>( glewGetErrorString(err) )), debug_level::ERROR);
 		glfwTerminate();
 		return;
 	}
@@ -58,21 +58,21 @@ void screen::init(int w, int h, const string& title){
 
 
 screen::screen(int w, int h): drawn_objects(){
-	Logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + " and h: " + std::to_string(h), debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + " and h: " + std::to_string(h), debug_level::DEBUG);
 	init(w, h, "No Title");
 }
 
 screen::screen(int w, int h, string title): drawn_objects(){
-	Logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + ", h: " + std::to_string(h) + ", and title '"+ title +"'", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + ", h: " + std::to_string(h) + ", and title '"+ title +"'", debug_level::DEBUG);
 	init(w, h, title);
 }
 
 void screen::mainLoop(){
-	Logger::GetInstance().log("[screen::main loop] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::main loop] begin", debug_level::DEBUG);
 	int i = 0;
 	while(!glfwWindowShouldClose(window.get())){
 		i += 1;
-		Logger::GetInstance().log("[screen::mainLoop] iteration: " + std::to_string(i) + " top of loop.", debug_level::DEBUG);
+		OKengine::logger::GetInstance().log("[screen::mainLoop] iteration: " + std::to_string(i) + " top of loop.", debug_level::DEBUG);
 		enterDrawState();
 		draw();
 		exitDrawState();
@@ -80,33 +80,33 @@ void screen::mainLoop(){
 }
 
 void screen::enterDrawState(){
-	Logger::GetInstance().log("[screen::enterDrawState] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::enterDrawState] begin", debug_level::DEBUG);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void screen::draw(){
-	Logger::GetInstance().log("[screen::draw] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::draw] begin", debug_level::DEBUG);
 	for(int i = 0; i < drawn_objects.size(); i += 1){
 		drawn_objects[i]->draw();
 	}
 }
 
 void screen::exitDrawState(){
-	Logger::GetInstance().log("[screen::exitDrawState] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::exitDrawState] begin", debug_level::DEBUG);
 	glfwSwapBuffers(window.get());
 	glfwPollEvents();
 }
 
 void screen::addMesh(mesh && m){
-	Logger::GetInstance().log("[screen::addMesh] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::addMesh] begin", debug_level::DEBUG);
 	drawn_objects.push_back(std::make_unique<mesh>(std::move(m)));
 }
 
 void screen::removeMesh(const mesh & m){
-	Logger::GetInstance().log("[screen::removeMesh] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[screen::removeMesh] begin", debug_level::DEBUG);
 	auto pos = std::find_if(drawn_objects.begin(), drawn_objects.end(), [&](auto& ptr){return *ptr == m;});
 	if(drawn_objects.end() == pos){
-		Logger::GetInstance().log("[screen::removeMesh] mesh not found", debug_level::WARN);
+		OKengine::logger::GetInstance().log("[screen::removeMesh] mesh not found", debug_level::WARN);
 		return;
 	}
 	drawn_objects.erase(pos);

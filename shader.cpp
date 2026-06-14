@@ -1,6 +1,6 @@
 
 #include "shader.hpp"
-#include "Logger.hpp"
+#include "logger.hpp"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -12,12 +12,12 @@
 using std::string;
 
 shader::~shader(){
-	Logger::GetInstance().log("[shader::~shader] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[shader::~shader] begin", debug_level::DEBUG);
 	glDeleteProgram(program);
 }
 
 shader::shader(string path): program(compile(path)){
-	Logger::GetInstance().log("[shader::shader] constructed with path: " + path, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[shader::shader] constructed with path: " + path, debug_level::DEBUG);
 }
 
 GLuint shader::compile(string path){
@@ -35,7 +35,7 @@ GLuint shader::compile(string path){
 		VertexStream.close();
 	}
 	else {
-		Logger::GetInstance().log("[shader::compile] could not open vertex shader file for " + path, debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[shader::compile] could not open vertex shader file for " + path, debug_level::ERROR);
 		return 0;
 	}
 
@@ -50,7 +50,7 @@ GLuint shader::compile(string path){
 		fragmentStream.close();
 	}
 	else{
-		Logger::GetInstance().log("[shader::compile] could not open fragment shader file for " + path, debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[shader::compile] could not open fragment shader file for " + path, debug_level::ERROR);
 		return 0;
 	}
 
@@ -65,7 +65,7 @@ GLuint shader::compile(string path){
 		glGetShaderiv(vertexId, GL_INFO_LOG_LENGTH, &infoLogLen);
 		std::vector<char> err_msg(infoLogLen + 1);
 		glGetShaderInfoLog(vertexId, infoLogLen, NULL, &err_msg[0]);
-		Logger::GetInstance().log("[shader::compile] failed to compile vertex shader " + vertex_path + "\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[shader::compile] failed to compile vertex shader " + vertex_path + "\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
 		return 0;
 	}
 
@@ -78,7 +78,7 @@ GLuint shader::compile(string path){
 		glGetShaderiv(fragmentId, GL_INFO_LOG_LENGTH, &infoLogLen);
 		std::vector<char> err_msg(infoLogLen + 1);
 		glGetShaderInfoLog(fragmentId, infoLogLen, NULL, &err_msg[0]);
-		Logger::GetInstance().log("[shader::compile] failed to compile fragment shader " + fragment_path + "\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[shader::compile] failed to compile fragment shader " + fragment_path + "\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
 		return 0;
 	}
 
@@ -92,7 +92,7 @@ GLuint shader::compile(string path){
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLen);
 		std::vector<char> err_msg(infoLogLen + 1);
 		glGetProgramInfoLog(program, infoLogLen, NULL, &err_msg[0]);
-		Logger::GetInstance().log("[shader::compile] failed to link shaders\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[shader::compile] failed to link shaders\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
 		return 0;
 	}
 
@@ -106,14 +106,14 @@ int shader::getUniformID(string name){
 	use();
 	int id = glGetUniformLocation(program, name.c_str());
 	if(-1 == id){  
-		Logger::GetInstance().log("[shader::getUniformID] could not get id for uniform: " + name + " (id=" + std::to_string(id) + ")", debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[shader::getUniformID] could not get id for uniform: " + name + " (id=" + std::to_string(id) + ")", debug_level::ERROR);
 	}
 	return id;
 }
 
 
 bool shader::setUniform(string name, glm::mat4 val){
-	Logger::GetInstance().log("[shader::setUniform] (mat4) name: " + name, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[shader::setUniform] (mat4) name: " + name, debug_level::DEBUG);
 	int id = getUniformID(name);
 	if(-1 == id){
 		return false;
@@ -125,7 +125,7 @@ bool shader::setUniform(string name, glm::mat4 val){
 }
 
 bool shader::setUniform(string name, glm::vec3 val){
-	Logger::GetInstance().log("[shader::setUniform] (vec3) name: " + name, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[shader::setUniform] (vec3) name: " + name, debug_level::DEBUG);
 	int id = getUniformID(name);
 	if(-1 == id){
 		return false;
@@ -137,7 +137,7 @@ bool shader::setUniform(string name, glm::vec3 val){
 }
 
 bool shader::setUniform(string name, float val){
-	Logger::GetInstance().log("[shader::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[shader::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
 	int id = getUniformID(name);
 	if(-1 == id){
 		return false;
@@ -150,7 +150,7 @@ bool shader::setUniform(string name, float val){
 
 
 bool shader::use(){
-	Logger::GetInstance().log("[shader::use] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[shader::use] begin", debug_level::DEBUG);
 	glUseProgram(program);
 	return true;
 }

@@ -2,8 +2,8 @@
 #include "screen.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
-#include "Logger.hpp"
 #include "texture.hpp"
+#include "logger.hpp"
 
 #include <GLFW/glfw3.h>
 #include <GL/glew.h>
@@ -14,7 +14,7 @@
 using glm::vec3;
 using glm::cross;
 int main(){
-	Logger::GetInstance().log("[main] program start", debug_level::INFO);
+	OKengine::logger::GetInstance().log("[main] program start", debug_level::INFO);
 
 	screen display(800, 600, "Graphics");
 	
@@ -39,6 +39,6 @@ int main(){
 	
 	display.mainLoop();
 
-	Logger::GetInstance().log("[main] program end", debug_level::INFO);
+	OKengine::logger::GetInstance().log("[main] program end", debug_level::INFO);
 	return 0;
 }

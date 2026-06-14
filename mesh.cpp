@@ -16,18 +16,19 @@ using std::vector;
 
 #include "mesh.hpp"
 #include "shader.hpp"
-#include "Logger.hpp"
+#include "logger.hpp"
 
 mesh::~mesh(){
-	Logger::GetInstance().log("[mesh::~mesh] begin", debug_level::DEBUG);
 	glDeleteVertexArrays(1, &vao);
+	OKengine::logger::GetInstance().log("[mesh::~mesh] begin", debug_level::DEBUG);
+	glDeleteBuffers(1, &vao);
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &tbo);
 }
 
 mesh::mesh(vector<float> verts, vector<GLuint> idxs): vertex_coords(verts), vertex_indices(idxs){
-	Logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs) with " + std::to_string(verts.size()) + " vertex_coords and " + std::to_string(idxs.size()) + " indices", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs) with " + std::to_string(verts.size()) + " vertices and " + std::to_string(idxs.size()) + " indices", debug_level::DEBUG);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
@@ -36,7 +37,7 @@ mesh::mesh(vector<float> verts, vector<GLuint> idxs): vertex_coords(verts), vert
 }
 
 mesh::mesh(vector<float> verts, vector<GLuint>idxs, string path): vertex_coords(verts), vertex_indices(idxs), tex(std::make_unique<texture>(path)){
-	Logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs+path) path: " + path, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs+path) path: " + path, debug_level::DEBUG);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
@@ -46,7 +47,7 @@ mesh::mesh(vector<float> verts, vector<GLuint>idxs, string path): vertex_coords(
 }
 
 mesh::mesh(mesh && other) noexcept: normal_coords(other.normal_coords), normal_indices(other.normal_indices), texture_coords(other.texture_coords), texture_indices(other.texture_indices), vertex_coords(other.vertex_coords), vertex_indices(other.vertex_indices), vao(other.vao), vbo(other.vbo), ebo(other.ebo), tbo(other.tbo), model_matrix(other.model_matrix){
-	Logger::GetInstance().log("[mesh::mesh] move constructor", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::mesh] move constructor", debug_level::DEBUG);
 	other.vao = 0;
 	other.vbo = 0;
 	other.ebo = 0;
@@ -67,7 +68,7 @@ mesh::mesh(mesh && other) noexcept: normal_coords(other.normal_coords), normal_i
 bool load_obj(string path, obj& outputs){
 	std::ifstream file(path);
 	if(!file.is_open()){
-		Logger::GetInstance().log("[load_obj] file not found, or is unopenable (path: " + path + ")", debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[load_obj] file not found, or is unopenable (path: " + path + ")", debug_level::ERROR);
 		return false;
 	}
 
@@ -85,7 +86,6 @@ bool load_obj(string path, obj& outputs){
 			continue;
 		}
 		else if(contents.find("vt",0) == 0){
-			Logger::GetInstance().log("[load_obj] vertex texture: "+ contents, debug_level::DEBUG);
 
 			int start_x = contents.find_first_of(' ', 0) + 1;;
 			int end_x = contents.find_first_of(' ', start_x) -1;
@@ -99,7 +99,6 @@ bool load_obj(string path, obj& outputs){
 			outputs.uvs.push_back(y);
 		}
 		else if(contents.find("vn",0) == 0){
-			Logger::GetInstance().log("[load_obj] vertex normal: "+ contents, debug_level::DEBUG);
 			int start_x = contents.find_first_of(' ', 0) + 1;
 			int end_x = contents.find_first_of(' ', start_x) - 1;
 			x = std::stof(contents.substr(start_x, end_x - start_x));
@@ -116,7 +115,6 @@ bool load_obj(string path, obj& outputs){
 			outputs.normals.push_back(z);
 		}
 		else if(contents.find("v",0) == 0){
-			Logger::GetInstance().log("[load_obj] vertex: "+ contents, debug_level::DEBUG);
 			int start_x = contents.find_first_of(' ', 0) + 1;
 			int end_x = contents.find_first_of(' ', start_x) - 1;
 			x = std::stof(contents.substr(start_x, end_x - start_x));
@@ -134,7 +132,6 @@ bool load_obj(string path, obj& outputs){
 		}
 		else if(contents.find("f",0) == 0){
 			glm::vec3 verts(-1), texs(-1), norms(-1);
-			Logger::GetInstance().log("[load_obj] face: "+ contents, debug_level::DEBUG);
 			int start_x = contents.find_first_of(' ', 0)+1;
 			int end_x = contents.find_first_of('/', start_x) - 1;
 			verts[0] = std::stoi(contents.substr(start_x, end_x - start_x));
@@ -199,7 +196,7 @@ bool load_obj(string path, obj& outputs){
 	}
 
 	if(!file.eof()){
-		Logger::GetInstance().log("[load_obj] reading obj file ran into an error", debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[load_obj] reading obj file ran into an error", debug_level::ERROR);
 		return false;
 	}
 	return true;
@@ -212,7 +209,7 @@ mesh::mesh(string path){
 	obj res;
 	try{  
 		if(!load_obj(path, res)){
-			Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR);
+			OKengine::logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR);
 		}
 		glGenVertexArrays(1, &vao);
 		glGenBuffers(1, &vbo);
@@ -231,13 +228,13 @@ mesh::mesh(string path){
 
 	}
 	catch(std::exception e){
-		Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path + "\n\t" + e.what(), debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path + "\n\t" + e.what(), debug_level::ERROR);
 	}
 }
 
 
 bool mesh::upload(){
-	Logger::GetInstance().log("[mesh::upload] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::upload] begin", debug_level::DEBUG);
 	bind();
 	int stride = 0;
 	if(tex != nullptr){
@@ -266,7 +263,7 @@ bool mesh::upload(){
 
 
 bool mesh::bind(){
-	Logger::GetInstance().log("[mesh::bind] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::bind] begin", debug_level::DEBUG);
 	if(tex != nullptr){
 		tex->bind();
 	}
@@ -276,13 +273,13 @@ bool mesh::bind(){
 
 
 void mesh::setShader(shader&& s){
-	Logger::GetInstance().log("[mesh::setShader] (rvalue ref)", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setShader] (rvalue ref)", debug_level::DEBUG);
 	shader_prog = std::make_unique<class shader>(std::move(s));
 }
 
 
 void mesh::setShader(std::unique_ptr<class shader> s){
-	Logger::GetInstance().log("[mesh::setShader] (unique_ptr)", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setShader] (unique_ptr)", debug_level::DEBUG);
 	shader_prog = std::move(s);
 }
 
@@ -297,7 +294,7 @@ void mesh::setTexture(std::unique_ptr<texture> t){
 }
 
 bool mesh::draw(){
-	Logger::GetInstance().log("[mesh::draw] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::draw] begin", debug_level::DEBUG);
 	if(shader_prog != nullptr){
 		shader_prog->use();
 	}
@@ -307,7 +304,7 @@ bool mesh::draw(){
 };
 
 bool mesh::operator==(const mesh& other) const{
-	Logger::GetInstance().log("[mesh::operator==] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::operator==] begin", debug_level::DEBUG);
 	bool verts = true;
 	bool inds = true;
 	for(int i = 0; i < vertex_coords.size() && verts; i +=1){
@@ -323,17 +320,17 @@ bool mesh::operator==(const mesh& other) const{
 
 
 bool mesh::setUniform(string name, glm::mat4 val){
-	Logger::GetInstance().log("[mesh::setUniform] (mat4) name: " + name, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setUniform] (mat4) name: " + name, debug_level::DEBUG);
 	return shader_prog->setUniform(name, val);
 };
 
 bool mesh::setUniform(string name, glm::vec3 val){
-	Logger::GetInstance().log("[mesh::setUniform] (vec3) name: " + name, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setUniform] (vec3) name: " + name, debug_level::DEBUG);
 	return shader_prog->setUniform(name, val);
 };
 
 bool mesh::setUniform(string name, float val){
-	Logger::GetInstance().log("[mesh::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
 	return shader_prog->setUniform(name, val);
 };
 
