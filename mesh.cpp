@@ -186,8 +186,18 @@ mesh::mesh(string path){
 
 	obj res;
 	if(!load_obj(path, res)){
-		Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR)
+		Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR);
+		return;
 	}
+
+	vertices = vector<float>(res.vertices.begin(),res.vertices.end());
+	indeces = vector<unsigned int>(res.v_idxs.begin(), res.v_idxs.end());
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ebo);
+
+	model_matrix = glm::mat4(1.);
+	upload();
 
 }
 
