@@ -5,8 +5,6 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-// mesh is only used through smart pointers here, so a forward declaration is
-// enough -- no need to pull in mesh.hpp (and all of GLEW/GLFW) via this header.
 class mesh;
 
 namespace OKengine {
