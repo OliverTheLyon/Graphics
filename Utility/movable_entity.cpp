@@ -1,43 +1,40 @@
 #include "movable_entity.hpp"
 
+#include <utility>
+
 namespace OKengine {
 
-        movable_entity::movable_entity() {
-                last_pos = OKengine::entity::DEFAULT_LOCATION;
-                acceleration = DEFAULT_ACCELERATION;
-                mass = DEFAULT_MASS;
-                set_curr_position(glm::vec3(0.0f));
-        }
+        // The base entity constructor handles curr_pos and the mesh; movable_entity
+        // only initializes its own members. Init-list order matches declaration order.
+        movable_entity::movable_entity()
+                : entity(DEFAULT_LOCATION),
+                  last_pos(DEFAULT_LOCATION),
+                  acceleration(DEFAULT_ACCELERATION),
+                  mass(DEFAULT_MASS) {}
 
-        movable_entity::movable_entity(glm::vec3 position) {
-                last_pos = position;
-                acceleration = DEFAULT_ACCELERATION;
-                mass = DEFAULT_MASS;
-                set_curr_position(position);
-        }
+        movable_entity::movable_entity(glm::vec3 position)
+                : entity(position),
+                  last_pos(position),
+                  acceleration(DEFAULT_ACCELERATION),
+                  mass(DEFAULT_MASS) {}
 
-        movable_entity::movable_entity(glm::vec3 position, std::shared_ptr<mesh> new_mesh) {
-                last_pos = position;
-                acceleration = DEFAULT_ACCELERATION;
-                mass = DEFAULT_MASS;
-                set_curr_position(position);
-                set_mesh(new_mesh);
-        }
+        movable_entity::movable_entity(glm::vec3 position, std::shared_ptr<mesh> new_mesh)
+                : entity(position, std::move(new_mesh)),
+                  last_pos(position),
+                  acceleration(DEFAULT_ACCELERATION),
+                  mass(DEFAULT_MASS) {}
 
-        movable_entity::movable_entity(glm::vec3 curr_position, glm::vec3 last_position, std::shared_ptr<mesh> new_mesh) {
-                last_pos = last_position;
-                acceleration = DEFAULT_ACCELERATION;
-                mass = DEFAULT_MASS;
-                set_curr_position(curr_position);
-        }
+        movable_entity::movable_entity(glm::vec3 curr_position, glm::vec3 last_position, std::shared_ptr<mesh> new_mesh)
+                : entity(curr_position, std::move(new_mesh)),
+                  last_pos(last_position),
+                  acceleration(DEFAULT_ACCELERATION),
+                  mass(DEFAULT_MASS) {}
 
-
-        movable_entity::movable_entity(std::shared_ptr<mesh> new_mesh) {
-                last_pos = OKengine::entity::DEFAULT_LOCATION;
-                acceleration = DEFAULT_ACCELERATION;
-                mass = DEFAULT_MASS;
-                set_curr_position(OKengine::entity::DEFAULT_LOCATION);
-        }
+        movable_entity::movable_entity(std::shared_ptr<mesh> new_mesh)
+                : entity(DEFAULT_LOCATION, std::move(new_mesh)),
+                  last_pos(DEFAULT_LOCATION),
+                  acceleration(DEFAULT_ACCELERATION),
+                  mass(DEFAULT_MASS) {}
 
         void movable_entity::add_force(const glm::vec3 &force) {
                 //TODO Determine how much force should be applied (multiplicative adjustment)
@@ -65,21 +62,16 @@ namespace OKengine {
                 mass = new_mass;
         }
 
-        void movable_entity::set_mesh(std::shared_ptr<mesh> new_mesh) {
-                //TODO Invalid Input (check mesh is fully computable)
-                mesh = new_mesh;
+        glm::vec3 movable_entity::get_last_position() const {
+                return last_pos;
         }
 
-        glm::vec3* movable_entity::get_last_position() {
-                return(&last_pos);
+        glm::vec3 movable_entity::get_acceleration() const {
+                return acceleration;
         }
 
-        glm::vec3* movable_entity::get_acceleration() {
-              return(&acceleration);
-        }
-
-        float movable_entity::get_mass() {
-                return(mass);
+        float movable_entity::get_mass() const {
+                return mass;
         }
 
 }

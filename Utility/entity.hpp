@@ -45,7 +45,7 @@ namespace OKengine {
         /**
          * placeholder for if entities have any memory ownership
          */
-        ~entity(){};
+        virtual ~entity() = default;
 
         /**
          * Description: Used to assign the current location of the entity directly
@@ -63,15 +63,15 @@ namespace OKengine {
 
         /**
          * Description: Gets current (x,y,z) position of the entity.
-         * @return pointer to (x,y,z) the current position of the entity.
+         * @return copy of (x,y,z) the current position of the entity.
          */
-        glm::vec3* get_curr_position();
+        glm::vec3 get_curr_position() const;
 
         /**
          * Description: Gets weak point to the mesh of the entity.
          * TODO: THROW EXCEPTION when no mesh in entity
          * @return weak copy pointer to the mesh inside the entity
          */
-        std::weak_ptr<mesh> get_mesh();
+        std::weak_ptr<mesh> get_mesh() const;
     };
 }

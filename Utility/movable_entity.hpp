@@ -49,7 +49,7 @@ namespace OKengine {
         /**
          * placeholder for if entities have any memory ownership
          */
-        ~movable_entity(){};
+        virtual ~movable_entity() = default;
 
         /**
          * Description: This is a shorthand used to add forces to the object (collision)
@@ -87,29 +87,22 @@ namespace OKengine {
         void set_mass(float new_mass);
 
         /**
-         * Description: Sets the Mesh of the entity.
-         * Throws: Invalid Input (check mesh is fully computable)
-         * @param new_mesh shared pointer to mesh class
-         */
-        void set_mesh(std::shared_ptr<mesh> new_mesh);
-
-        /**
          * Description: Gets last (x,y,z) position of the entity.
-         * @return pointer to (x,y,z) last position of the entity.
+         * @return copy of (x,y,z) last position of the entity.
          */
-        glm::vec3* get_last_position();
+        glm::vec3 get_last_position() const;
 
         /**
          * Description: Gets (x,y,z) acceleration of the entity.
-         * @return pointer to (x,y,z) acceleration of the entity.
+         * @return copy of (x,y,z) acceleration of the entity.
          */
-        glm::vec3* get_acceleration();
+        glm::vec3 get_acceleration() const;
 
         /**
          * Description: Gets mass of the entity.
          * @return float mass
          */
-        float      get_mass();
+        float     get_mass() const;
 
     };
 }
