@@ -3,14 +3,18 @@
 
 #include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
+#include <memory>
 
+// mesh is only used through smart pointers here, so a forward declaration is
+// enough -- no need to pull in mesh.hpp (and all of GLEW/GLFW) via this header.
+class mesh;
 
 namespace OKengine {
     class entity {
 
         private:
-        std::shared_ptr<mesh> mesh; //MESH
-        glm::vec3 curr_pos;         //current centroid position
+        std::shared_ptr<mesh> entity_mesh; //MESH
+        glm::vec3 curr_pos;                //current centroid position
 
         public:
 

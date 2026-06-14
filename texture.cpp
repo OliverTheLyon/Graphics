@@ -6,23 +6,23 @@ using std::string;
 #include "stb_image.h"
 
 #include "texture.hpp"
-#include "Logger.hpp"
+#include "logger.hpp"
 
 
 texture::~texture(){
-	Logger::GetInstance().log("[texture::~texture] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[texture::~texture] begin", debug_level::DEBUG);
 	glDeleteTextures(1, &id);
 }
 
 
 GLuint texture::getID(){
-	Logger::GetInstance().log("[texture::getID] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[texture::getID] begin", debug_level::DEBUG);
 	return id;
 }
 
 
 texture::texture(string path){
-	Logger::GetInstance().log("[texture::texture] loading texture from path: " + path, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[texture::texture] loading texture from path: " + path, debug_level::DEBUG);
 	int width = 0;
 	int height = 0;
 	int chanels = 0;
@@ -30,7 +30,7 @@ texture::texture(string path){
 	unsigned char *data = stbi_load(path.c_str(), &width, &height, &chanels, 0);
 
 	if(!data){
-		Logger::GetInstance().log("[texture::texture] failed to load image from " + path, debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[texture::texture] failed to load image from " + path, debug_level::ERROR);
 		return;
 	}
 
@@ -46,7 +46,7 @@ texture::texture(string path){
 
 
 void texture::bind(){
-	Logger::GetInstance().log("[texture::bind] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[texture::bind] begin", debug_level::DEBUG);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, id);
 }

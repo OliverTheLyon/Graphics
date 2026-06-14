@@ -13,17 +13,17 @@ using std::vector;
 
 #include "mesh.hpp"
 #include "shader.hpp"
-#include "Logger.hpp"
+#include "logger.hpp"
 
 mesh::~mesh(){
-	Logger::GetInstance().log("[mesh::~mesh] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::~mesh] begin", debug_level::DEBUG);
 	glDeleteBuffers(1, &vao);
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ebo);
 }
 
 mesh::mesh(vector<float> verts, vector<GLuint> idxs): vertices(verts), indeces(idxs){
-	Logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs) with " + std::to_string(verts.size()) + " vertices and " + std::to_string(idxs.size()) + " indices", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs) with " + std::to_string(verts.size()) + " vertices and " + std::to_string(idxs.size()) + " indices", debug_level::DEBUG);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
@@ -32,7 +32,7 @@ mesh::mesh(vector<float> verts, vector<GLuint> idxs): vertices(verts), indeces(i
 }
 
 mesh::mesh(vector<float> verts, vector<GLuint>idxs, string path): vertices(verts), indeces(idxs), tex(std::make_unique<texture>(path)){
-	Logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs+path) path: " + path, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::mesh] constructor (verts+idxs+path) path: " + path, debug_level::DEBUG);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ebo);
@@ -41,7 +41,7 @@ mesh::mesh(vector<float> verts, vector<GLuint>idxs, string path): vertices(verts
 }
 
 mesh::mesh(mesh && other) noexcept: vertices(other.vertices), indeces(other.indeces), vao(other.vao), vbo(other.vbo), ebo(other.ebo), model_matrix(other.model_matrix){
-	Logger::GetInstance().log("[mesh::mesh] move constructor", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::mesh] move constructor", debug_level::DEBUG);
 	other.vao = 0;
 	other.vbo = 0;
 	other.ebo = 0;
@@ -63,7 +63,7 @@ mesh::mesh(mesh && other) noexcept: vertices(other.vertices), indeces(other.inde
 bool load_obj(string path, obj& outputs){
 	std::ifstream file(path);
 	if(!file.is_open()){
-		Logger::GetInstance().log("[load_obj] file not found, or is unopenable (path: " + path + ")", debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[load_obj] file not found, or is unopenable (path: " + path + ")", debug_level::ERROR);
 		return false;
 	}
 
@@ -174,7 +174,7 @@ bool load_obj(string path, obj& outputs){
 	}
 
 	if(!file.eof()){
-		Logger::GetInstance().log("[load_obj] reading obj file ran into an error", debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[load_obj] reading obj file ran into an error", debug_level::ERROR);
 		return false;
 	}
 	return true;
@@ -186,7 +186,7 @@ mesh::mesh(string path){
 
 	obj res;
 	if(!load_obj(path, res)){
-		Logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR);
+		OKengine::logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR);
 		return;
 	}
 
@@ -203,7 +203,7 @@ mesh::mesh(string path){
 
 
 bool mesh::upload(){
-	Logger::GetInstance().log("[mesh::upload] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::upload] begin", debug_level::DEBUG);
 	bind();
 	int stride = 0;
 	if(tex != nullptr){
@@ -230,7 +230,7 @@ bool mesh::upload(){
 
 
 bool mesh::bind(){
-	Logger::GetInstance().log("[mesh::bind] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::bind] begin", debug_level::DEBUG);
 	if(tex != nullptr){
 		tex->bind();
 	}
@@ -241,19 +241,19 @@ bool mesh::bind(){
 
 
 void mesh::setShader(shader&& s){
-	Logger::GetInstance().log("[mesh::setShader] (rvalue ref)", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setShader] (rvalue ref)", debug_level::DEBUG);
 	shader_prog = std::make_unique<class shader>(std::move(s));
 }
 
 
 void mesh::setShader(std::unique_ptr<class shader> s){
-	Logger::GetInstance().log("[mesh::setShader] (unique_ptr)", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setShader] (unique_ptr)", debug_level::DEBUG);
 	shader_prog = std::move(s);
 }
 
 
 bool mesh::draw(){
-	Logger::GetInstance().log("[mesh::draw] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::draw] begin", debug_level::DEBUG);
 	if(shader_prog != nullptr){
 		shader_prog->use();
 	}
@@ -263,7 +263,7 @@ bool mesh::draw(){
 };
 
 bool mesh::operator==(const mesh& other) const{
-	Logger::GetInstance().log("[mesh::operator==] begin", debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::operator==] begin", debug_level::DEBUG);
 	bool verts = true;
 	bool inds = true;
 	for(int i = 0; i < vertices.size() && verts; i +=1){
@@ -279,17 +279,17 @@ bool mesh::operator==(const mesh& other) const{
 
 
 bool mesh::setUniform(string name, glm::mat4 val){
-	Logger::GetInstance().log("[mesh::setUniform] (mat4) name: " + name, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setUniform] (mat4) name: " + name, debug_level::DEBUG);
 	return shader_prog->setUniform(name, val);
 };
 
 bool mesh::setUniform(string name, glm::vec3 val){
-	Logger::GetInstance().log("[mesh::setUniform] (vec3) name: " + name, debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setUniform] (vec3) name: " + name, debug_level::DEBUG);
 	return shader_prog->setUniform(name, val);
 };
 
 bool mesh::setUniform(string name, float val){
-	Logger::GetInstance().log("[mesh::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
+	OKengine::logger::GetInstance().log("[mesh::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
 	return shader_prog->setUniform(name, val);
 };
 

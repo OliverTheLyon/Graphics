@@ -1,8 +1,11 @@
 #pragma once
 #include <fstream>
 #include <string>
+#include <iostream>
+
 enum class debug_level { INFO=0, DEBUG=1,  WARN=2, ERROR=3};
-class Logger{
+namespace OKengine {
+	class logger{
 
 	private:
 		std::string logfile;
@@ -11,16 +14,17 @@ class Logger{
 
 		
 		
-		Logger(std::string path="program.log", debug_level dl=debug_level::INFO);
+		logger(std::string path="program.log", debug_level dl=debug_level::INFO);
 	public:
 
 
-		~Logger();
-		static Logger& GetInstance(){
-			static Logger instance;
+		~logger();
+		static logger& GetInstance(){
+			static logger instance;
 			return instance;
 		};
 
 		void SetLevel(debug_level lvl);
 		void log(std::string msg, debug_level level);
-};
+	};
+}
