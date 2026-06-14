@@ -11,6 +11,19 @@
 
 #include "shader.hpp"
 #include "texture.hpp"
+
+struct obj{
+	std::vector<float> vertices;
+	std::vector<unsigned int> v_idxs;
+	
+	std::vector<float> normals;
+	std::vector<unsigned int> n_idxs;
+
+	std::vector<float> uvs;
+	std::vector<unsigned int> uv_idxs;
+};
+typedef struct obj obj;
+
 class mesh{
 
 	private:
@@ -23,6 +36,8 @@ class mesh{
 		GLuint vao;
 		GLuint vbo;
 		GLuint ebo;
+
+		glm::mat4 model_matrix;
 
 		bool upload();
 		bool bind();
