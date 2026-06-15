@@ -3,7 +3,7 @@
  * @brief Implementation of OKengine::movable_entity.
  *
  * Defines the movable_entity constructors and its physics accessors/mutators
- * (force application, position/acceleration/mass) declared in movable_entity.hpp.
+ * (force application, position/acceleration_/mass_) declared in movable_entity.hpp.
  *
  * Part of OKengine.
  * @author Oliver Lyon
@@ -20,37 +20,37 @@ namespace OKengine {
         // only initializes its own members. Init-list order matches declaration order.
         movable_entity::movable_entity()
                 : entity(DEFAULT_LOCATION),
-                  last_pos(DEFAULT_LOCATION),
-                  acceleration(DEFAULT_ACCELERATION),
-                  mass(DEFAULT_MASS) {}
+                  last_pos_(DEFAULT_LOCATION),
+                  acceleration_(DEFAULT_ACCELERATION),
+                  mass_(DEFAULT_MASS) {}
 
         movable_entity::movable_entity(glm::vec3 position)
                 : entity(position),
-                  last_pos(position),
-                  acceleration(DEFAULT_ACCELERATION),
-                  mass(DEFAULT_MASS) {}
+                  last_pos_(position),
+                  acceleration_(DEFAULT_ACCELERATION),
+                  mass_(DEFAULT_MASS) {}
 
         movable_entity::movable_entity(glm::vec3 position, std::shared_ptr<mesh> new_mesh)
                 : entity(position, std::move(new_mesh)),
-                  last_pos(position),
-                  acceleration(DEFAULT_ACCELERATION),
-                  mass(DEFAULT_MASS) {}
+                  last_pos_(position),
+                  acceleration_(DEFAULT_ACCELERATION),
+                  mass_(DEFAULT_MASS) {}
 
         movable_entity::movable_entity(glm::vec3 curr_position, glm::vec3 last_position, std::shared_ptr<mesh> new_mesh)
                 : entity(curr_position, std::move(new_mesh)),
-                  last_pos(last_position),
-                  acceleration(DEFAULT_ACCELERATION),
-                  mass(DEFAULT_MASS) {}
+                  last_pos_(last_position),
+                  acceleration_(DEFAULT_ACCELERATION),
+                  mass_(DEFAULT_MASS) {}
 
         movable_entity::movable_entity(std::shared_ptr<mesh> new_mesh)
                 : entity(DEFAULT_LOCATION, std::move(new_mesh)),
-                  last_pos(DEFAULT_LOCATION),
-                  acceleration(DEFAULT_ACCELERATION),
-                  mass(DEFAULT_MASS) {}
+                  last_pos_(DEFAULT_LOCATION),
+                  acceleration_(DEFAULT_ACCELERATION),
+                  mass_(DEFAULT_MASS) {}
 
         void movable_entity::set_last_position(glm::vec3 position) {
                 //TODO SET Invalid Location, Overflow check, Speed Trap
-                last_pos = position;
+                last_pos_ = position;
         }
 
         void movable_entity::set_position(glm::vec3 position) {
