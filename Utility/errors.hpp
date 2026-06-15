@@ -16,9 +16,45 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <source_location>
 
 namespace OKengine {
+
+/**
+ * @brief C++17 stand-in for source_location (which is C++20).
+ *
+ * Captures the call site through compiler built-ins used as default arguments
+ * (supported by GCC and Clang). Drop-in for the subset we use: file_name(),
+ * function_name(), and line().
+ */
+struct source_location {
+private:
+    //~~~~~~~~~~~~~~~~VARIABLES~~~~~~~~~~~~~~~~
+
+    const char* file_ = "";
+    const char* func_ = "";
+    unsigned    line_ = 0;
+
+    constexpr source_location(const char* file, const char* func, unsigned line) noexcept
+        : file_(file), func_(func), line_(line) {}
+
+public:
+    constexpr source_location() noexcept = default;
+
+    /** @brief Captures the caller's location; leave the arguments defaulted. */
+    static constexpr source_location current(
+        const char* file = __builtin_FILE(),
+        const char* func = __builtin_FUNCTION(),
+        unsigned    line = __builtin_LINE()) noexcept {
+        return source_location(file, func, line);
+    }
+
+    /** @brief Gets the source file. @return the file name of the call site. */
+    constexpr const char* file_name()     const noexcept { return file_; }
+    /** @brief Gets the function. @return the function name of the call site. */
+    constexpr const char* function_name() const noexcept { return func_; }
+    /** @brief Gets the line. @return the line number of the call site. */
+    constexpr unsigned    line()          const noexcept { return line_; }
+};
 
 /**
  * @brief Severity of an engine diagnostic.
@@ -65,7 +101,7 @@ private:
     //~~~~~~~~~~~~~~~~VARIABLES~~~~~~~~~~~~~~~~
 
     Severity severity_;
-    std::source_location location_;
+    source_location location_;
 
 public:
     /**
@@ -76,7 +112,7 @@ public:
      */
     Exception(std::string_view message,
               Severity severity,
-              const std::source_location& loc);
+              const source_location& loc);
 
     /** @brief Gets the severity.
      * @return the severity level this exception was raised with.
@@ -86,7 +122,7 @@ public:
     /** @brief Gets the origin.
      * @return the source location where this exception was raised.
      */
-    const std::source_location& where() const noexcept { return location_; }
+    const source_location& where() const noexcept { return location_; }
 };
 
 // NOTE: declarations only. The default arguments live HERE (not in errors.cpp)
@@ -98,7 +134,7 @@ public:
  * @param loc     captured automatically at the call site; do not pass explicitly
  */
 void warn(std::string_view message,
-          const std::source_location& loc = std::source_location::current());
+          const source_location& loc = source_location::current());
 
 /**
  * @brief Reports a recovered failure: the engine auto corrected but the cause
@@ -107,7 +143,7 @@ void warn(std::string_view message,
  * @param loc     captured automatically at the call site; do not pass explicitly
  */
 void recovered(std::string_view message,
-               const std::source_location& loc = std::source_location::current());
+               const source_location& loc = source_location::current());
 
 /**
  * @brief Reports a recoverable error: logs at ERROR, then throws an Exception.
@@ -116,7 +152,7 @@ void recovered(std::string_view message,
  * @throws Exception always
  */
 [[noreturn]] void error(std::string_view message,
-                        const std::source_location& loc = std::source_location::current());
+                        const source_location& loc = source_location::current());
 
 /**
  * @brief Reports an unrecoverable failure: logs at ERROR, then aborts the process.
@@ -124,6 +160,6 @@ void recovered(std::string_view message,
  * @param loc     captured automatically at the call site; do not pass explicitly
  */
 [[noreturn]] void fatal(std::string_view message,
-                        const std::source_location& loc = std::source_location::current());
+                        const source_location& loc = source_location::current());
 
 } // namespace OKengine

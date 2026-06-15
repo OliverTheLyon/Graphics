@@ -22,7 +22,7 @@ namespace {   // internal helpers -- not exposed in the header
 
 std::string format_message(std::string_view msg,
                            Severity sev,
-                           const std::source_location& loc) {
+                           const source_location& loc) {
     std::string out;
     out.reserve(msg.size() + 64);
     out.append("[OKengine ");
@@ -50,9 +50,9 @@ std::string format_message(std::string_view msg,
 
 std::string record(std::string_view message,
                    Severity sev,
-                   const std::source_location& loc) {
+                   const source_location& loc) {
     std::string formatted = format_message(message, sev, loc);
-    ::logger::GetInstance().log(formatted, to_debug_level(sev));
+    OKengine::logger::GetInstance().log(formatted, to_debug_level(sev));
     return formatted;
 }
 
@@ -60,27 +60,27 @@ std::string record(std::string_view message,
 
 Exception::Exception(std::string_view message,
                      Severity severity,
-                     const std::source_location& loc)
+                     const source_location& loc)
     : std::runtime_error(format_message(message, severity, loc)),
       severity_(severity),
       location_(loc) {}
 
 // NOTE: default arguments are NOT repeated here -- they may only appear once,
 // in the header declaration.
-void warn(std::string_view message, const std::source_location& loc) {
+void warn(std::string_view message, const source_location& loc) {
     std::cerr << record(message, Severity::Warning, loc) << '\n';
 }
 
-void recovered(std::string_view message, const std::source_location& loc) {
+void recovered(std::string_view message, const source_location& loc) {
     std::cerr << record(message, Severity::Recovered, loc) << '\n';
 }
 
-void error(std::string_view message, const std::source_location& loc) {
+void error(std::string_view message, const source_location& loc) {
     record(message, Severity::Error, loc);
     throw Exception(message, Severity::Error, loc);
 }
 
-void fatal(std::string_view message, const std::source_location& loc) {
+void fatal(std::string_view message, const source_location& loc) {
     std::cerr << record(message, Severity::Fatal, loc) << std::endl;
     std::abort();
 }
