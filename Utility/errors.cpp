@@ -12,7 +12,7 @@
  */
 
 #include "errors.hpp"
-#include "Logger.hpp"   // the Logger dependency is now confined to this .cpp
+#include "logger.hpp"   // the Logger dependency is now confined to this .cpp
 
 #include <iostream>
 #include <cstdlib>
@@ -52,7 +52,7 @@ std::string record(std::string_view message,
                    Severity sev,
                    const std::source_location& loc) {
     std::string formatted = format_message(message, sev, loc);
-    ::Logger::GetInstance().log(formatted, to_debug_level(sev));
+    ::logger::GetInstance().log(formatted, to_debug_level(sev));
     return formatted;
 }
 
