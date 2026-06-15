@@ -28,7 +28,12 @@ add_executable(Graphics main.cpp
     texture.hpp texture.cpp
     shader.hpp shader.cpp
     mesh.hpp mesh.cpp
-    logger.hpp logger.cpp)
+    logger.hpp logger.cpp
+    Utility/entity.hpp Utility/entity.cpp
+    Utility/movable_entity.hpp Utility/movable_entity.cpp
+    Utility/errors.hpp Utility/errors.cpp
+    Utility/transform.hpp
+)
 
 target_include_directories(Graphics PRIVATE
     ${OPENGL_INCLUDE_DIR}
