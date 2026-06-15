@@ -135,47 +135,47 @@ namespace OKengine {
 				glm::vec3 verts(-1), texs(-1), norms(-1);
 				int start_x = contents.find_first_of(' ', 0)+1;
 				int end_x = contents.find_first_of('/', start_x) - 1;
-				verts[0] = std::stoi(contents.substr(start_x, end_x - start_x));
+				verts[0] = std::stoi(contents.substr(start_x, end_x - start_x + 1));
 
 				int start_y = end_x + 2;
 				int end_y = contents.find_first_of('/', start_y) - 1;
 				if(start_y < end_y - 1){
-					texs[0] = std::stoi(contents.substr(start_y,end_y - start_y));
+					texs[0] = std::stoi(contents.substr(start_y,end_y - start_y + 1));
 				}
 
 				int start_z = end_y + 2;
 				int end_z = contents.find_first_of(' ', start_z) - 1;
-				norms[0] = std::stoi(contents.substr(start_z, end_z - start_z));
+				norms[0] = std::stoi(contents.substr(start_z, end_z - start_z + 1));
 
 
 				start_x = contents.find_first_of(' ', end_z) + 1;
 				end_x = contents.find_first_of('/', start_x) - 1;
-				verts[1] = std::stoi(contents.substr(start_x, end_x - start_x));
+				verts[1] = std::stoi(contents.substr(start_x, end_x - start_x + 1));
 
 				start_y = end_x + 2;
 				end_y = contents.find_first_of('/', start_y) - 1;
 				if(start_y < end_y - 1){
-					texs[1] = std::stoi(contents.substr(start_y,end_y - start_y));
+					texs[1] = std::stoi(contents.substr(start_y,end_y - start_y + 1));
 				}
 
 				start_z = end_y + 2;
 				end_z = contents.find_first_of(' ', start_z) - 1;
-				norms[1] = std::stoi(contents.substr(start_z, end_z - start_y));
+				norms[1] = std::stoi(contents.substr(start_z, end_z - start_z + 1));
 
 
 				start_x = contents.find_first_of(' ', end_z) + 1;
 				end_x = contents.find_first_of('/', start_x) - 1;
-				verts[2] = std::stoi(contents.substr(start_x, end_x - start_x));
+				verts[2] = std::stoi(contents.substr(start_x, end_x - start_x + 1));
 
 				start_y = end_x + 2;
 				end_y = contents.find_first_of('/', start_y) - 1;
 				if(start_y < end_y - 1){
-					texs[2] = std::stoi(contents.substr(start_y,end_y - start_y));
+					texs[2] = std::stoi(contents.substr(start_y,end_y - start_y + 1));
 				}
 
 				start_z = end_y + 2;
 				end_z = contents.find_first_of(' ', start_z) - 1;
-				norms[2] = std::stoi(contents.substr(start_z, end_z - start_z));
+				norms[2] = std::stoi(contents.substr(start_z, end_z - start_z + 1));
 
 				outputs.v_idxs.push_back(verts[0] - 1);
 				outputs.v_idxs.push_back(verts[1] - 1);
@@ -225,7 +225,8 @@ namespace OKengine {
 			normal_coords = vector<float>(res.normals);
 			normal_indices = vector<GLuint>(res.n_idxs);
 
-			bind();
+			model_matrix = glm::mat4(1.);
+			upload();
 
 		}
 		catch(std::exception e){
@@ -287,11 +288,13 @@ namespace OKengine {
 
 	void mesh::setTexture(texture && t){
 		tex = std::make_unique<texture>(std::move(t));
+		upload();
 	}
 
 
 	void mesh::setTexture(std::unique_ptr<texture> t){
 		tex = std::move(t);
+		upload();
 	}
 
 	bool mesh::draw(){

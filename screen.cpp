@@ -67,18 +67,6 @@ namespace OKengine {
 		init(w, h, title);
 	}
 
-	void screen::mainLoop(){
-		OKengine::logger::GetInstance().log("[screen::main loop] begin", debug_level::DEBUG);
-		int i = 0;
-		while(!glfwWindowShouldClose(window.get())){
-			i += 1;
-			OKengine::logger::GetInstance().log("[screen::mainLoop] iteration: " + std::to_string(i) + " top of loop.", debug_level::DEBUG);
-			enterDrawState();
-			draw();
-			exitDrawState();
-		}
-	}
-
 	void screen::enterDrawState(){
 		OKengine::logger::GetInstance().log("[screen::enterDrawState] begin", debug_level::DEBUG);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -110,5 +98,9 @@ namespace OKengine {
 			return;
 		}
 		drawn_objects.erase(pos);
+	}
+
+	void screen::setKeyCallback(GLFWkeyfun callback){
+		glfwSetKeyCallback(window.get(), callback);
 	}
 }

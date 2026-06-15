@@ -23,9 +23,6 @@ namespace OKengine {
 
 		void init(int w, int h, const std::string& title);
 
-		void enterDrawState();
-		void draw();
-		void exitDrawState();
 
 	public:
 		screen(int w, int h);
@@ -34,6 +31,10 @@ namespace OKengine {
 		void addMesh(OKengine::mesh && m);
 		void removeMesh(const OKengine::mesh & m);
 
-		void mainLoop();
+		void enterDrawState();
+		void draw();
+		void exitDrawState();
+
+		void setKeyCallback(GLFWkeyfun callback);
 	};
 }

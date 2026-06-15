@@ -12,7 +12,15 @@
 #include <glm/geometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 using glm::vec3;
-using glm::cross;
+
+bool running = true;
+
+void stop(GLFWwindow *w, int key, int scancode, int action, int mods){
+	if(key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE){
+		running = false;
+	}
+}
+
 int main(){
 	OKengine::logger::GetInstance().log("[main] program start", debug_level::INFO);
 
@@ -26,18 +34,19 @@ int main(){
 	square.setUniform("colour", glm::vec3(1,0,0));
 	
 	vec3 pos(0,0,-4);
-	vec3 g_up(0,1,0);
-	vec3 right = glm::normalize(cross(pos,g_up));
-	vec3 up = cross(pos,right);
-	camera c1(pos, glm::vec3(0,0,0), up);
+	camera c1(pos, glm::vec3(0,0,0), vec3(0,1,0));
 
 	glm::mat4 mv = glm::mat4(c1.viewMatrix());
 	glm::mat4 p = glm::perspective(45., 800./600.,0.1,10.); 
 	square.setUniform("mvp", p * mv);
 	display.addMesh(std::move(square));
 
-	
-	display.mainLoop();
+	display.setKeyCallback(stop);
+	do {
+		display.enterDrawState();
+		display.draw();
+		display.exitDrawState();
+	}while(running);
 
 	OKengine::logger::GetInstance().log("[main] program end", debug_level::INFO);
 	return 0;
