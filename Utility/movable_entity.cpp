@@ -1,3 +1,15 @@
+/**
+ * @file movable_entity.cpp
+ * @brief Implementation of OKengine::movable_entity.
+ *
+ * Defines the movable_entity constructors and its physics accessors/mutators
+ * (force application, position/acceleration/mass) declared in movable_entity.hpp.
+ *
+ * Part of OKengine.
+ * @author Oliver Lyon
+ * @date 2026-06-14
+ */
+
 #include "movable_entity.hpp"
 
 #include <utility>
@@ -36,11 +48,6 @@ namespace OKengine {
                   acceleration(DEFAULT_ACCELERATION),
                   mass(DEFAULT_MASS) {}
 
-        void movable_entity::add_force(const glm::vec3 &force) {
-                //TODO Determine how much force should be applied (multiplicative adjustment)
-                acceleration += (FORCE_REDUCTION *  force);
-        }
-
         void movable_entity::set_last_position(glm::vec3 position) {
                 //TODO SET Invalid Location, Overflow check, Speed Trap
                 last_pos = position;
@@ -54,24 +61,29 @@ namespace OKengine {
 
         void movable_entity::set_acceleration(glm::vec3 new_acceleration) {
                 //TODO CHECK Overflow check, Speed Trap
-                acceleration = new_acceleration;
+                acceleration_ = new_acceleration;
         }
 
         void movable_entity::set_mass(float new_mass) {
                 //TODO Invalid Input (negative floats, 0 and inf)
-                mass = new_mass;
+                mass_ = new_mass;
         }
 
         glm::vec3 movable_entity::get_last_position() const {
-                return last_pos;
+                return last_pos_;
         }
 
         glm::vec3 movable_entity::get_acceleration() const {
-                return acceleration;
+                return acceleration_;
         }
 
         float movable_entity::get_mass() const {
-                return mass;
+                return mass_;
+        }
+
+        void movable_entity::add_force(const glm::vec3 &force) {
+                //TODO Determine how much force should be applied (multiplicative adjustment)
+                acceleration_ += (FORCE_REDUCTION *  force);
         }
 
 }

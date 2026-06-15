@@ -1,3 +1,16 @@
+/**
+ * @file errors.cpp
+ * @brief Implementation of the OKengine error-reporting functions.
+ *
+ * Defines the Exception constructor and the warn/recovered/error/fatal
+ * functions, including message formatting and the bridge to the logger. The
+ * logger dependency is confined to this translation unit.
+ *
+ * Part of OKengine.
+ * @author Oliver Lyon
+ * @date 2026-06-14
+ */
+
 #include "errors.hpp"
 #include "Logger.hpp"   // the Logger dependency is now confined to this .cpp
 
