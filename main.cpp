@@ -16,12 +16,12 @@ using glm::cross;
 int main(){
 	OKengine::logger::GetInstance().log("[main] program start", debug_level::INFO);
 
-	screen display(800, 600, "Graphics");
+	OKengine::screen display(800, 600, "Graphics");
 	
-	shader s("resources/basic");
+	OKengine::shader s("resources/basic");
 	
-	mesh square("resources/Test.obj");
-	square.setTexture(texture("resources/texture.jpg"));
+	OKengine::mesh square("resources/Test.obj");
+	square.setTexture(OKengine::texture("resources/texture.jpg"));
 	square.setShader(std::move(s));
 	square.setUniform("colour", glm::vec3(1,0,0));
 	

@@ -6,9 +6,8 @@
 #include <glm/glm.hpp>
 #include <string>
 
-
-
-class shader{
+namespace OKengine {
+	class shader{
 	private:
 		GLuint program;
 		GLuint compile(std::string path);
@@ -29,4 +28,5 @@ class shader{
 		bool setUniform(std:: string name, float val);
 
 
-};
+	};
+}

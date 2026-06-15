@@ -8,18 +8,18 @@
 
 #include "mesh.hpp"
 
+namespace OKengine {
+	struct DestroyglfwWin{
+		void operator()(GLFWwindow* ptr){
+			glfwDestroyWindow(ptr);
+		}
+	};
 
-struct DestroyglfwWin{
-	void operator()(GLFWwindow* ptr){
-		glfwDestroyWindow(ptr);
-	}
-};
-
-class screen{
+	class screen{
 	private:
 		std::unique_ptr<GLFWwindow, DestroyglfwWin> window;
 
-		std::vector<std::unique_ptr<mesh>> drawn_objects;
+		std::vector<std::unique_ptr<OKengine::mesh>> drawn_objects;
 
 		void init(int w, int h, const std::string& title);
 
@@ -31,8 +31,9 @@ class screen{
 		screen(int w, int h);
 		screen(int w, int h, std::string title);
 
-		void addMesh(mesh && m);
-		void removeMesh(const mesh & m);
+		void addMesh(OKengine::mesh && m);
+		void removeMesh(const OKengine::mesh & m);
 
 		void mainLoop();
-};
+	};
+}

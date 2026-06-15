@@ -11,20 +11,20 @@
 
 #include "shader.hpp"
 #include "texture.hpp"
+namespace OKengine {
+	struct obj{
+		std::vector<float> vertices;
+		std::vector<unsigned int> v_idxs;
 
-struct obj{
-	std::vector<float> vertices;
-	std::vector<unsigned int> v_idxs;
-	
-	std::vector<float> normals;
-	std::vector<unsigned int> n_idxs;
+		std::vector<float> normals;
+		std::vector<unsigned int> n_idxs;
 
-	std::vector<float> uvs;
-	std::vector<unsigned int> uv_idxs;
-};
-typedef struct obj obj;
+		std::vector<float> uvs;
+		std::vector<unsigned int> uv_idxs;
+	};
+	typedef struct obj obj;
 
-class mesh{
+	class mesh{
 
 	private:
 		std::vector<float> vertex_coords;
@@ -71,4 +71,5 @@ class mesh{
 		bool setUniform(std::string name, glm::vec3 val);
 		bool setUniform(std::string name, float val);
 
-};
+	};
+}

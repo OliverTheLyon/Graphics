@@ -5,8 +5,8 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
-
-class texture{
+namespace OKengine {
+	class texture{
 	private:
 		GLuint id;
 
@@ -22,4 +22,5 @@ class texture{
 		void bind();
 		GLuint getID();
 
-};
+	};
+}
