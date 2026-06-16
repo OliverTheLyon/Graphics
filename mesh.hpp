@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/ext/vector_float3.hpp>
 #include <memory>
 #include <vector>
 #include <string>
@@ -13,13 +14,13 @@
 #include "texture.hpp"
 namespace OKengine {
 	struct obj{
-		std::vector<float> vertices;
+		std::vector<glm::vec3> vertices;
 		std::vector<unsigned int> v_idxs;
 
-		std::vector<float> normals;
+		std::vector<glm::vec3> normals;
 		std::vector<unsigned int> n_idxs;
 
-		std::vector<float> uvs;
+		std::vector<glm::vec2> uvs;
 		std::vector<unsigned int> uv_idxs;
 	};
 	typedef struct obj obj;
@@ -27,13 +28,13 @@ namespace OKengine {
 	class mesh{
 
 	private:
-		std::vector<float> vertex_coords;
+		std::vector<glm::vec3> vertex_coords;
 		std::vector<GLuint> vertex_indices;
 
-		std::vector<float> texture_coords;
+		std::vector<glm::vec2> texture_coords;
 		std::vector<GLuint> texture_indices;
 
-		std::vector<float> normal_coords;
+		std::vector<glm::vec3> normal_coords;
 		std::vector<GLuint> normal_indices;
 
 		std::unique_ptr<texture> tex;
@@ -52,8 +53,8 @@ namespace OKengine {
 	public:
 		~mesh();
 		mesh(std::string path);
-		mesh(std::vector<float> vertices, std::vector<GLuint> indeces);
-		mesh(std::vector<float> vertices, std::vector<GLuint> indeces, std::string path);
+		mesh(std::vector<glm::vec3> vertices, std::vector<GLuint> indeces);
+		mesh(std::vector<glm::vec3> vertices, std::vector<GLuint> indeces, std::string path);
 		mesh(mesh && other) noexcept;
 
 

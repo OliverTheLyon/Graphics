@@ -149,6 +149,18 @@ namespace OKengine {
 		return true;
 	}
 
+	bool shader::setUniform(string name, int val){
+		OKengine::logger::GetInstance().log("[shader::setUniform] (int) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
+		int id = getUniformID(name);
+		if(-1 == id){
+			return false;
+		}
+
+		use();
+		glUniform1i(id, val);
+		return true;
+	}
+
 
 	bool shader::use(){
 		OKengine::logger::GetInstance().log("[shader::use] begin", debug_level::DEBUG);

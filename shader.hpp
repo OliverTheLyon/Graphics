@@ -26,6 +26,7 @@ namespace OKengine {
 		bool setUniform(std::string name, glm::mat4 val);
 		bool setUniform(std::string name, glm::vec3 val);
 		bool setUniform(std:: string name, float val);
+		bool setUniform(std::string name, int val);
 
 
 	};

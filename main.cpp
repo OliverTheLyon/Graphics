@@ -34,7 +34,7 @@ int main(){
 	square.setUniform("colour", glm::vec3(1,0,0));
 	
 	vec3 pos(0,0,-4);
-	camera c1(pos, glm::vec3(0,0,0), vec3(0,1,0));
+	camera c1(-pos, glm::vec3(0,0,0), vec3(0,1,0));
 
 	glm::mat4 mv = glm::mat4(c1.viewMatrix());
 	glm::mat4 p = glm::perspective(45., 800./600.,0.1,10.); 
