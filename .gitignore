@@ -72,3 +72,6 @@ Testing/
 # other
 AGENTS.md
 PLAN.md
+*.blend
+*.mtl
+stb_image.h
