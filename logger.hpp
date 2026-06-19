@@ -14,18 +14,29 @@ namespace OKengine {
 		std::string logfile;
 		std::mutex log_mutex_;
 		
-		
+		/**
+		 * @brief TODO
+		 **/
 		logger(std::string path="program.log", debug_level dl=debug_level::INFO);
 	public:
 
 
+		/**
+		 * @brief TODO
+		 **/
 		~logger();
 		static logger& GetInstance(){
 			static logger instance;
 			return instance;
 		};
 
+		/**
+		 * @brief TODO
+		 **/
 		void SetLevel(debug_level lvl);
+		/**
+		 * @brief TODO
+		 **/
 		void log(const std::string & msg, debug_level level);
 	};
 }
