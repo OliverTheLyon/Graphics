@@ -13,15 +13,17 @@ namespace OKengine {
 	public:
 
 		/**
-		 * @brief TODO
+		 * @brief Destructor.
 		 **/
 		~texture();
 		/**
-		 * @brief TODO
+		 * @brief Constructor. Image formats are limited to jpg, png, and bmp
+		 *
+		 * @param path: the path to the image, including file extension.
 		 **/
 		texture(std::string path);
 		/**
-		 * @brief TODO
+		 * @brief: move constructor.
 		 **/
 		texture(texture && other): id(other.id){
 			other.id = 0;
@@ -29,11 +31,11 @@ namespace OKengine {
 		texture(texture & other) = delete;
 		
 		/**
-		 * @brief TODO
+		 * @brief a method to bind the texture for use with the shader. 
 		 **/
 		void bind();
 		/**
-		 * @brief TODO
+		 * @brief A method to get the shader ID of the texture.
 		 **/
 		GLuint getID();
 
