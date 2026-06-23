@@ -28,6 +28,7 @@ add_executable(Graphics main.cpp
     texture.hpp texture.cpp
     shader.hpp shader.cpp
     mesh.hpp mesh.cpp
+    light.hpp light.cpp
     logger.hpp logger.cpp
     Utility/entity.hpp Utility/entity.cpp
     Utility/movable_entity.hpp Utility/movable_entity.cpp

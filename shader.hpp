@@ -6,10 +6,13 @@
 #include <glm/glm.hpp>
 #include <string>
 
+#include "logger.hpp"
+
 namespace OKengine {
 	class shader{
 	private:
 		GLuint program;
+		std::string _path;
 		/**
 		 * @brief The method to compile the shaders. Abstracted away from the 
 		 * various constructors.
@@ -31,10 +34,12 @@ namespace OKengine {
 		 * @brief Move constructor. Ensures that the original location does not
 		 * have a reference to the compiled program.
 		 **/
-		shader(shader && other)noexcept : program(other.program){
+		shader(shader && other)noexcept : _path(other._path), program(other.program){
 			other.program = 0;
 		}
-		shader(const shader &) = delete;
+		shader(const shader & other) noexcept: _path(other._path), program(compile(other._path)){
+			OKengine::logger::GetInstance().log("[shader::shader] copy constructed from path: " + _path, debug_level::DEBUG);
+		}
 
 		/**
 		 * @brief Destructor.
