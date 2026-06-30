@@ -25,6 +25,7 @@ namespace OKengine {
 		glDeleteBuffers(1, &vbo);
 		glDeleteBuffers(1, &ebo);
 		glDeleteBuffers(1, &tbo);
+		glDeleteBuffers(1, &nbo);
 	}
 
 	mesh::mesh(vector<glm::vec3> verts, vector<GLuint> idxs): vertex_coords(verts), vertex_indices(idxs){
@@ -50,13 +51,14 @@ namespace OKengine {
 		normal_coords(other.normal_coords), normal_indices(other.normal_indices), 
 		texture_coords(other.texture_coords), texture_indices(other.texture_indices), 
 		vertex_coords(other.vertex_coords), vertex_indices(other.vertex_indices), 
-		vao(other.vao), vbo(other.vbo), ebo(other.ebo), tbo(other.tbo), 
+		vao(other.vao), vbo(other.vbo), ebo(other.ebo), tbo(other.tbo),nbo(other.nbo), 
 		model_matrix(other.model_matrix){
 		OKengine::logger::GetInstance().log("[mesh::mesh] move constructor", debug_level::DEBUG);
 		other.vao = 0;
 		other.vbo = 0;
 		other.ebo = 0;
 		other.tbo = 0;
+		other.nbo = 0;
 
 		if(other.tex != nullptr){
 			tex = std::move(other.tex);
@@ -80,8 +82,7 @@ namespace OKengine {
 		char line[200];
 		string contents;
 		vector<float> temp_vert, temp_norm, temp_uv;
-		// TODO: change outputs.* to temp_* and then move the 'temp' values to 
-		// to an ordered array (ordered by given index).
+		
 		while(file.good()){
 			float x = 0;
 			float y = 0;
@@ -260,6 +261,7 @@ namespace OKengine {
 			glGenBuffers(1, &vbo);
 			glGenBuffers(1, &ebo);
 			glGenBuffers(1, &tbo);
+			glGenBuffers(1, &nbo);
 			vertex_coords = vector<glm::vec3>(res.vertices);
 			vertex_indices = vector<GLuint>(res.v_idxs);
 
@@ -297,6 +299,10 @@ namespace OKengine {
 			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * texture_coords.size(), &texture_coords[0], GL_STATIC_DRAW);
 			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		}
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, nbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*normal_coords.size(), &normal_coords[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		return true;
 	}
 
@@ -304,12 +310,16 @@ namespace OKengine {
 	bool mesh::bind(){
 		OKengine::logger::GetInstance().log("[mesh::bind] begin", debug_level::DEBUG);
 		if(tex != nullptr){
+			OKengine::logger::GetInstance().log("[mesh::bind] setting texture", debug_level::DEBUG);
 			tex->bind();
 			if(shader_prog != nullptr){
 				shader_prog->setUniform("tex", 0);
 			}
 		}
+
+		OKengine::logger::GetInstance().log("[mesh::bind] binding vao (" + std::to_string(vao) + ")", debug_level::DEBUG);
 		glBindVertexArray(vao);
+		OKengine::logger::GetInstance().log("[mesh::bind] success. returning", debug_level::DEBUG);
 		return true;
 	}
 
@@ -340,10 +350,15 @@ namespace OKengine {
 	bool mesh::draw(){
 		OKengine::logger::GetInstance().log("[mesh::draw] begin", debug_level::DEBUG);
 		if(shader_prog != nullptr){
+			OKengine::logger::GetInstance().log("[mesh::draw] activating shader program", debug_level::DEBUG);
 			shader_prog->use();
 		}
+
+		OKengine::logger::GetInstance().log("[mesh::draw] activating bindings.", debug_level::DEBUG);
 		bind();
+		OKengine::logger::GetInstance().log("[mesh::draw] activating draw call.", debug_level::DEBUG);
 		glDrawElements(GL_TRIANGLES, vertex_indices.size(), GL_UNSIGNED_INT, 0);
+		OKengine::logger::GetInstance().log("[mesh::draw] completed. success. returning.", debug_level::DEBUG);
 		return true;
 	};
 
@@ -365,16 +380,25 @@ namespace OKengine {
 
 	bool mesh::setUniform(string name, glm::mat4 val){
 		OKengine::logger::GetInstance().log("[mesh::setUniform] (mat4) name: " + name, debug_level::DEBUG);
+		if(shader_prog == nullptr){
+			OKengine::logger::GetInstance().log("[mesh::setUniform] attempt to set uniform with null shader.", debug_level::ERROR);
+		}
 		return shader_prog->setUniform(name, val);
 	};
 
 	bool mesh::setUniform(string name, glm::vec3 val){
 		OKengine::logger::GetInstance().log("[mesh::setUniform] (vec3) name: " + name, debug_level::DEBUG);
+		if(shader_prog == nullptr){
+			OKengine::logger::GetInstance().log("[mesh::setUniform] attempt to set uniform with null shader.", debug_level::ERROR);
+		}
 		return shader_prog->setUniform(name, val);
 	};
 
 	bool mesh::setUniform(string name, float val){
 		OKengine::logger::GetInstance().log("[mesh::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
+		if(shader_prog == nullptr){
+			OKengine::logger::GetInstance().log("[mesh::setUniform] attempt to set uniform with null shader.", debug_level::ERROR);
+		}
 		return shader_prog->setUniform(name, val);
 	};
 }

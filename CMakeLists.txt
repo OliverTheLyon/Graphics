@@ -36,6 +36,7 @@ add_executable(Graphics main.cpp
     Utility/transform.hpp
 )
 
+
 target_include_directories(Graphics PRIVATE
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIRS}
@@ -44,6 +45,36 @@ target_include_directories(Graphics PRIVATE
 )
 
 target_link_libraries(Graphics
+    ${OPENGL_LIBRARIES}
+    GLEW::glew
+    glfw
+)
+
+
+
+
+add_executable(lightTest lighttest.cpp
+    screen.hpp screen.cpp
+    camera.hpp camera.cpp
+    texture.hpp texture.cpp
+    shader.hpp shader.cpp
+    mesh.hpp mesh.cpp
+    light.hpp light.cpp
+    logger.hpp logger.cpp
+    Utility/entity.hpp Utility/entity.cpp
+    Utility/movable_entity.hpp Utility/movable_entity.cpp
+    Utility/errors.hpp Utility/errors.cpp
+    Utility/transform.hpp
+)
+
+target_include_directories(lightTest PRIVATE
+    ${OPENGL_INCLUDE_DIR}
+    ${GLEW_INCLUDE_DIRS}
+    ${GLM_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}
+)
+
+target_link_libraries(lightTest
     ${OPENGL_LIBRARIES}
     GLEW::glew
     glfw

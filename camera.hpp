@@ -102,4 +102,9 @@ class camera{
 		 **/
 		glm::mat4 viewMatrix();
 
+		/**
+		 * @brief getter for position
+		 **/
+		glm::vec3 getPosition();
+
 };

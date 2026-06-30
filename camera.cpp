@@ -62,4 +62,6 @@ void camera::createViewMatrix(){
 	view = glm::lookAt(position, target, up);
 }
 
-
+vec3 camera::getPosition(){
+	return position;
+}

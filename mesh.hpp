@@ -40,10 +40,11 @@ namespace OKengine {
 		std::unique_ptr<texture> tex;
 		std::unique_ptr<shader> shader_prog;
 
-		GLuint vao;
-		GLuint vbo;
-		GLuint ebo;
-		GLuint tbo;
+		GLuint vao; // vertex array
+		GLuint vbo; // vertex buffer
+		GLuint ebo; // element buffer (indices)
+		GLuint tbo; // texture buffer
+		GLuint nbo; // normal buffer
 
 		glm::mat4 model_matrix;
 

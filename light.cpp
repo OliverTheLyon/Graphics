@@ -49,3 +49,17 @@ void light::setDirection(vec3 dir){
 	direction = vec3(dir);
 }
 
+
+
+light_type light::getType(){
+	return type;
+}
+
+vec3 light::getPosition(){
+	return position;
+}
+
+vec3 light::getDirection(){
+	return direction;
+}
+

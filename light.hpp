@@ -16,6 +16,7 @@ class light{
 		
 		std::shared_ptr<OKengine::shader> shadow_shader; // ponter to the shader
 														 // for doing shadows.
+													
 
 		light_type type; // type of light
 
@@ -98,4 +99,11 @@ class light{
 		  * cone of light to.
 		  **/
 		 void setDirection(glm::vec3 dir);
+
+
+		 //getters
+		 light_type getType();
+		 glm::vec3 getPosition();
+		 glm::vec3 getDirection();
+
 };
