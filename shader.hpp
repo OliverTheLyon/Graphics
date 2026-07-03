@@ -4,14 +4,13 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <glm/glm.hpp>
+#include <memory>
 #include <string>
-
-#include "logger.hpp"
 
 namespace OKengine {
 	class shader{
 	private:
-		GLuint program;
+		std::shared_ptr<GLuint> program;
 		std::string _path;
 		/**
 		 * @brief The method to compile the shaders. Abstracted away from the 
@@ -37,9 +36,7 @@ namespace OKengine {
 		shader(shader && other)noexcept : _path(other._path), program(other.program){
 			other.program = 0;
 		}
-		shader(const shader & other) noexcept: _path(other._path), program(compile(other._path)){
-			OKengine::logger::GetInstance().log("[shader::shader] copy constructed from path: " + _path, debug_level::DEBUG);
-		}
+		shader(const shader & other) noexcept: _path(other._path), program(other.program){}
 
 		/**
 		 * @brief Destructor.

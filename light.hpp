@@ -16,6 +16,7 @@ class light{
 		
 		std::shared_ptr<OKengine::shader> shadow_shader; // ponter to the shader
 														 // for doing shadows.
+		std::shared_ptr<OKengine::shader> regular_shader;
 													
 
 		light_type type; // type of light
@@ -54,17 +55,38 @@ class light{
 		 *
 		 * @param path: path to the shadow shader, excluding file extension.
 		 **/
-		void setShader(std::string path);
+		void setShadowShader(std::string path);
 
 		/**
 		 * @brief Setter for the shadow shader.
 		 *
 		 * @param shadow: a precompiled shader program for calculating the shadows.
 		 **/
-		void setShader(std::shared_ptr<OKengine::shader> shadow);
+		void setShadowShader(std::shared_ptr<OKengine::shader> shadow);
 
 		/**
 		 * @brief Setter for the shadow shader
+		 *
+		 * @param shadow: a referennce to the new shadow shader.
+		 **/
+		void setShadowShader(const OKengine::shader & shadow);
+
+		/**
+		 * @brief Setter for the shadow shader
+		 *
+		 * @param path: path to the regular shader, excluding file extension.
+		 **/
+		void setShader(std::string path);
+
+		/**
+		 * @brief Setter for the regular shader.
+		 *
+		 * @param shadow: a precompiled shader program for calculating the shadows.
+		 **/
+		void setShader(std::shared_ptr<OKengine::shader> shadow);
+
+		/**
+		 * @brief Setter for the regular shader
 		 *
 		 * @param shadow: a referennce to the new shadow shader.
 		 **/

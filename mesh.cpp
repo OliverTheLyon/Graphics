@@ -324,15 +324,15 @@ namespace OKengine {
 	}
 
 
-	void mesh::setShader(shader&& s){
+	void mesh::setShader(shader & s){
 		OKengine::logger::GetInstance().log("[mesh::setShader] (rvalue ref)", debug_level::DEBUG);
-		shader_prog = std::make_unique<class shader>(std::move(s));
+		shader_prog = std::make_shared<shader>(s);
 	}
 
 
-	void mesh::setShader(std::unique_ptr<class shader> s){
+	void mesh::setShader(std::shared_ptr<shader> s){
 		OKengine::logger::GetInstance().log("[mesh::setShader] (unique_ptr)", debug_level::DEBUG);
-		shader_prog = std::move(s);
+		shader_prog = s;
 	}
 
 

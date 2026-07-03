@@ -19,21 +19,43 @@ light::light(vec3 pos, vec3 dir): type(spotlight), position(pos), direction(dir)
 light::light(light_type t, vec3 pos, vec3 dir): type(t), position(pos), direction(dir){}
 
 
-void light::setShader(string path){
+void light::setShadowShader(string path){
 	shadow_shader = std::make_shared<shader>(path);
 }
 
-void light::setShader(shared_ptr<shader> shadow){
+void light::setShadowShader(shared_ptr<shader> shadow){
 	shadow_shader = shadow;
 }
 
-void light::setShader(const OKengine::shader & shadow){
+void light::setShadowShader(const OKengine::shader & shadow){
 	shadow_shader = std::make_shared<shader>(shadow);
+}
+
+
+void light::setShader(string path){
+	regular_shader = std::make_shared<shader>(path);
+	regular_shader->setUniform("lightPos", position);
+}
+
+void light::setShader(shared_ptr<shader> shdr){
+	regular_shader = shdr;
+	regular_shader->setUniform("lightPos", position);
+}
+
+void light::setShader(const OKengine::shader & shdr){
+	regular_shader = std::make_shared<shader>(shdr);
+	regular_shader->setUniform("lightPos", position);
 }
 
 
 void light::moveBy(vec3 delta){
 	position += delta;
+	if(regular_shader != nullptr){
+		regular_shader->setUniform("lightPos", position);
+	}
+	if(shadow_shader != nullptr){
+		regular_shader->setUniform("lightPos", position);
+	}
 }
 
 void light::tiltBy(vec3 delta){
@@ -43,6 +65,12 @@ void light::tiltBy(vec3 delta){
 
 void light::setPosition(vec3 pos){
 	position = vec3(pos);
+	if(regular_shader != nullptr){
+		regular_shader->setUniform("lightPos", position);
+	}
+	if(shadow_shader != nullptr){
+		regular_shader->setUniform("lightPos", position);
+	}
 }
 
 void light::setDirection(vec3 dir){

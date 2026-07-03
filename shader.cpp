@@ -14,11 +14,16 @@ using std::string;
 namespace OKengine {
 	shader::~shader(){
 		OKengine::logger::GetInstance().log("[shader::~shader] begin", debug_level::DEBUG);
-		glDeleteProgram(program);
+		_path.erase();
 	}
 
-	shader::shader(string path): program(compile(path)){
+	shader::shader(string path): _path(path){
 		OKengine::logger::GetInstance().log("[shader::shader] constructed with path: " + path, debug_level::DEBUG);
+		
+		program = std::shared_ptr<GLuint>(
+		new GLuint(compile(path)),
+		[](GLuint* p) { glDeleteProgram(*p); delete p; p = nullptr; }
+		);	
 	}
 
 	GLuint shader::compile(string path){
@@ -105,7 +110,7 @@ namespace OKengine {
 
 	int shader::getUniformID(string name){
 		use();
-		int id = glGetUniformLocation(program, name.c_str());
+		int id = glGetUniformLocation(*program, name.c_str());
 		if(-1 == id){
 			OKengine::logger::GetInstance().log("[shader::getUniformID] could not get id for uniform: " + name + " (id=" + std::to_string(id) + ")", debug_level::ERROR);
 		}
@@ -164,7 +169,7 @@ namespace OKengine {
 
 	bool shader::use(){
 		OKengine::logger::GetInstance().log("[shader::use] begin", debug_level::DEBUG);
-		glUseProgram(program);
+		glUseProgram(*program);
 		return true;
 	}
 }

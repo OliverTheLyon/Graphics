@@ -1,5 +1,6 @@
 
 #include "screen.hpp"
+#include <iostream>
 using OKengine::screen;
 #include "shader.hpp"
 #include "camera.hpp"
@@ -32,7 +33,7 @@ int main(){
 	
 	OKengine::mesh square("resources/Test.obj");
 	square.setTexture(OKengine::texture("resources/texture.jpg"));
-	square.setShader(std::move(s));
+	square.setShader(s);
 	
 	vec3 pos(0,0,-4);
 	camera c1(-pos, glm::vec3(0,0,0), vec3(0,1,0));
@@ -49,13 +50,41 @@ int main(){
 	square.setUniform("specularity", 0.5);
 
 	display.setKeyCallback(stop);
-	light p_light(vec3(2,0,0),vec3(0,0,0));
-
-	square.setUniform("lightPos", p_light.getPosition());
+	light p_light(vec3(3,0,2),vec3(0,0,0));
+	
+	p_light.setShader(s);
 
 	display.addMesh(std::move(square));
 
+	float delta = 0.02;
+	float dx=delta, dy=delta/2., dz=delta/4.;
 	do {
+		vec3 l_pos = p_light.getPosition();
+		float x = l_pos.x;
+		float y = l_pos.y;
+		float z = l_pos.z;
+
+
+		if(x > 3){
+			dx = -delta;
+		}else if(x < -3){
+			dx = delta;
+		}
+
+		if(y > 3){
+			dy = -delta/2.;
+		}else if(y < -3){
+			dy = delta/2.;
+		}
+
+		if(z > 3){
+			dz = -delta/4.;
+		}else if(z < -3 ){
+			dz = delta/4.;
+		}
+
+		p_light.moveBy(vec3(dx, dy, dz));
+		
 		display.enterDrawState();
 		display.draw();
 		display.exitDrawState();

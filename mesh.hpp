@@ -38,7 +38,7 @@ namespace OKengine {
 		std::vector<GLuint> normal_indices;
 
 		std::unique_ptr<texture> tex;
-		std::unique_ptr<shader> shader_prog;
+		std::shared_ptr<shader> shader_prog;
 
 		GLuint vao; // vertex array
 		GLuint vbo; // vertex buffer
@@ -102,14 +102,14 @@ namespace OKengine {
 		 *
 		 * @param shader: the shader object the mesh should use.
 		 **/
-		void setShader(shader&& s);
+		void setShader(shader & s);
 		/**
 		 * @brief Setter for the shader; uses move semantics. Will overwrite the
 		 * current shader if one exists.
 		 *
 		 * @param shader: the shader object the mesh should use.
 		 **/
-		void setShader(std::unique_ptr<class shader> s);
+		void setShader(std::shared_ptr<class shader> s);
 
 		/**
 		 * @brief Setter for the texture; uses move semantics. Will overwrite the
