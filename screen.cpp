@@ -1,11 +1,10 @@
 
 #include "screen.hpp"
-#include "mesh.hpp"
 #include "logger.hpp"
+#include "scene.hpp"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <algorithm>
 #include <memory>
 #include <string>
 using std::string;
@@ -56,13 +55,12 @@ namespace OKengine {
 		glViewport(0,0,w,h);
 	}
 
-
-	screen::screen(int w, int h): drawn_objects(){
+	screen::screen(int w, int h){
 		OKengine::logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + " and h: " + std::to_string(h), debug_level::DEBUG);
 		init(w, h, "No Title");
 	}
 
-	screen::screen(int w, int h, string title): drawn_objects(){
+	screen::screen(int w, int h, string title){
 		OKengine::logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + ", h: " + std::to_string(h) + ", and title '"+ title +"'", debug_level::DEBUG);
 		init(w, h, title);
 	}
@@ -73,10 +71,7 @@ namespace OKengine {
 	}
 
 	void screen::draw(){
-		OKengine::logger::GetInstance().log("[screen::draw] begin", debug_level::DEBUG);
-		for(int i = 0; i < drawn_objects.size(); i += 1){
-			drawn_objects[i]->draw();
-		}
+		curScene->renderScene();
 	}
 
 	void screen::exitDrawState(){
@@ -85,22 +80,11 @@ namespace OKengine {
 		glfwPollEvents();
 	}
 
-	void screen::addMesh(OKengine::mesh && m){
-		OKengine::logger::GetInstance().log("[screen::addMesh] begin", debug_level::DEBUG);
-		drawn_objects.push_back(std::make_unique<OKengine::mesh>(std::move(m)));
-	}
-
-	void screen::removeMesh(const OKengine::mesh & m){
-		OKengine::logger::GetInstance().log("[screen::removeMesh] begin", debug_level::DEBUG);
-		auto pos = std::find_if(drawn_objects.begin(), drawn_objects.end(), [&](auto& ptr){return *ptr == m;});
-		if(drawn_objects.end() == pos){
-			OKengine::logger::GetInstance().log("[screen::removeMesh] OKengine::mesh not found", debug_level::WARN);
-			return;
-		}
-		drawn_objects.erase(pos);
-	}
-
 	void screen::setKeyCallback(GLFWkeyfun callback){
 		glfwSetKeyCallback(window.get(), callback);
+	}
+
+	void screen::setScene(scene s){
+		curScene = std::make_unique<scene>(s);
 	}
 }

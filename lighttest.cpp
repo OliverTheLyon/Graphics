@@ -1,5 +1,6 @@
 
 #include "screen.hpp"
+#include <glm/trigonometric.hpp>
 #include <iostream>
 using OKengine::screen;
 #include "shader.hpp"
@@ -34,6 +35,11 @@ int main(){
 	OKengine::mesh square("resources/Test.obj");
 	square.setTexture(OKengine::texture("resources/texture.jpg"));
 	square.setShader(s);
+
+	square.setUniform("mat.diffuse", 0);
+	square.setUniform("mat.specular", 0);
+	square.setUniform("mat.specularity", 32.0);
+
 	
 	vec3 pos(0,0,-4);
 	camera c1(-pos, glm::vec3(0,0,0), vec3(0,1,0));
@@ -43,16 +49,24 @@ int main(){
 	square.setUniform("mvp", p * mv);
 	square.setUniform("model", glm::mat4(1.0));
 
-	square.setUniform("diffuseColour", glm::vec3(0.,1.,0.));
-	square.setUniform("ambientColour", glm::vec3(0.4, 0.7, 0.4));
-	square.setUniform("ambientStrength", 0.5);
 	square.setUniform("viewPos", c1.getPosition());
-	square.setUniform("specularity", 0.5);
 
 	display.setKeyCallback(stop);
 	light p_light(vec3(3,0,2),vec3(0,0,0));
 	
 	p_light.setShader(s);
+
+	square.setUniform("sptLights[0].position", p_light.getPosition());
+	square.setUniform("sptLights[0].dircetion", p_light.getDirection());
+
+	square.setUniform("sptLights[0].ambient", glm::vec3(0.4, 0.7, 0.4));
+	square.setUniform("sptLights[0].diffuse", glm::vec3(0.,1.,0.));
+	square.setUniform("sptLights[0].specular", glm::vec3(0.25, 0.25, 0.25));
+
+	square.setUniform("sptLights[0].cutoff", glm::cos(glm::radians(12.5f)));
+	square.setUniform("sptLights[0].outerCutOff", glm::cos(glm::radians(15.0f)) );
+	
+	square.setUniform("sptLights[0].factors", glm::vec3(1., 0.5, 0.25));
 
 	display.addMesh(std::move(square));
 
@@ -84,6 +98,7 @@ int main(){
 		}
 
 		p_light.moveBy(vec3(dx, dy, dz));
+		s.setUniform("sptLights[0].position", p_light.getPosition());
 		
 		display.enterDrawState();
 		display.draw();

@@ -1,12 +1,10 @@
 
 #pragma once
+#include "scene.hpp"
 #include <memory>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
-#include <vector>
-
-#include "mesh.hpp"
 
 namespace OKengine {
 	struct DestroyglfwWin{
@@ -19,7 +17,7 @@ namespace OKengine {
 	private:
 		std::unique_ptr<GLFWwindow, DestroyglfwWin> window;
 
-		std::vector<std::unique_ptr<OKengine::mesh>> drawn_objects;
+		std::unique_ptr<scene> curScene;
 
 		/**
 		 * @brief Code common to the screen constructors.
@@ -43,21 +41,6 @@ namespace OKengine {
 		 **/
 		screen(int w, int h, std::string title);
 
-		/**
-		 * @brief a method to add a mesh to the screen. Only needs to be called 
-		 * once per instance of mesh. Uses move semantics.
-		 *
-		 * @param m: the mesh to be added to the screen.
-		 **/
-		void addMesh(OKengine::mesh && m);
-		/**
-		 * @brief A method to remove a mesh from the screen. Will remove the 
-		 * first matching instance of m, so meshes of the same position will need
-		 * subsequent calls. Matches exactly.
-		 *
-		 * @param m: the mesh to search for in the screen.
-		 **/
-		void removeMesh(const OKengine::mesh & m);
 
 		/**
 		 * @brief A method to prepare the screen to draw. Currently just clears
@@ -85,5 +68,11 @@ namespace OKengine {
 		 * @param callback: the method to be called. 
 		 **/
 		void setKeyCallback(GLFWkeyfun callback);
-	};
-}
+
+		/**
+		 * @brief A method to set the current scene
+		 *
+		 * @param s: the new scene.
+		 **/
+		void setScene(scene s);
+};

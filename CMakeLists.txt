@@ -24,6 +24,7 @@ file(COPY ${CMAKE_SOURCE_DIR}/resources DESTINATION ${CMAKE_BINARY_DIR})
 
 add_executable(Graphics main.cpp
     screen.hpp screen.cpp
+    scene.hpp scene.cpp
     camera.hpp camera.cpp
     texture.hpp texture.cpp
     shader.hpp shader.cpp
@@ -56,6 +57,7 @@ target_link_libraries(Graphics
 add_executable(lightTest lighttest.cpp
     screen.hpp screen.cpp
     camera.hpp camera.cpp
+    scene.hpp scene.cpp
     texture.hpp texture.cpp
     shader.hpp shader.cpp
     mesh.hpp mesh.cpp

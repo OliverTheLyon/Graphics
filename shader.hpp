@@ -10,8 +10,13 @@
 namespace OKengine {
 	class shader{
 	private:
+		// object information
 		std::shared_ptr<GLuint> program;
 		std::string _path;
+
+		// state variables
+		bool inUse;
+		static shader *current;
 		/**
 		 * @brief The method to compile the shaders. Abstracted away from the 
 		 * various constructors.
@@ -33,10 +38,10 @@ namespace OKengine {
 		 * @brief Move constructor. Ensures that the original location does not
 		 * have a reference to the compiled program.
 		 **/
-		shader(shader && other)noexcept : _path(other._path), program(other.program){
+		shader(shader && other)noexcept : _path(other._path), program(other.program), inUse(other.inUse){
 			other.program = 0;
 		}
-		shader(const shader & other) noexcept: _path(other._path), program(other.program){}
+		shader(const shader & other) noexcept: _path(other._path), program(other.program), inUse(other.inUse){}
 
 		/**
 		 * @brief Destructor.

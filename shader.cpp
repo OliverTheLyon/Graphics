@@ -9,15 +9,21 @@
 #include <sstream>
 #include <string>
 #include <vector>
+using std::vector;
 using std::string;
 
 namespace OKengine {
+shader* shader::current = nullptr;
+
 	shader::~shader(){
 		OKengine::logger::GetInstance().log("[shader::~shader] begin", debug_level::DEBUG);
+		if(current && current == this){
+			current = nullptr;
+		}
 		_path.erase();
 	}
 
-	shader::shader(string path): _path(path){
+	shader::shader(string path): _path(path), inUse(false){
 		OKengine::logger::GetInstance().log("[shader::shader] constructed with path: " + path, debug_level::DEBUG);
 		
 		program = std::shared_ptr<GLuint>(
@@ -69,7 +75,7 @@ namespace OKengine {
 		glGetShaderiv(vertexId, GL_COMPILE_STATUS, &res);
 		if(!res){
 			glGetShaderiv(vertexId, GL_INFO_LOG_LENGTH, &infoLogLen);
-			std::vector<char> err_msg(infoLogLen + 1);
+			vector<char> err_msg(infoLogLen + 1);
 			glGetShaderInfoLog(vertexId, infoLogLen, NULL, &err_msg[0]);
 			OKengine::logger::GetInstance().log("[shader::compile] failed to compile vertex shader " + vertex_path + "\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
 			return 0;
@@ -82,7 +88,7 @@ namespace OKengine {
 		glGetShaderiv(fragmentId, GL_COMPILE_STATUS, &res);
 		if(!res){
 			glGetShaderiv(fragmentId, GL_INFO_LOG_LENGTH, &infoLogLen);
-			std::vector<char> err_msg(infoLogLen + 1);
+			vector<char> err_msg(infoLogLen + 1);
 			glGetShaderInfoLog(fragmentId, infoLogLen, NULL, &err_msg[0]);
 			OKengine::logger::GetInstance().log("[shader::compile] failed to compile fragment shader " + fragment_path + "\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
 			return 0;
@@ -96,7 +102,7 @@ namespace OKengine {
 		glGetProgramiv(program, GL_LINK_STATUS, &res);
 		if(!res){
 			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLen);
-			std::vector<char> err_msg(infoLogLen + 1);
+			vector<char> err_msg(infoLogLen + 1);
 			glGetProgramInfoLog(program, infoLogLen, NULL, &err_msg[0]);
 			OKengine::logger::GetInstance().log("[shader::compile] failed to link shaders\n\t" + string(err_msg.begin(), err_msg.end()), debug_level::ERROR);
 			return 0;
@@ -109,7 +115,9 @@ namespace OKengine {
 	}
 
 	int shader::getUniformID(string name){
-		use();
+		if(!inUse){
+			use();
+		}
 		int id = glGetUniformLocation(*program, name.c_str());
 		if(-1 == id){
 			OKengine::logger::GetInstance().log("[shader::getUniformID] could not get id for uniform: " + name + " (id=" + std::to_string(id) + ")", debug_level::ERROR);
@@ -125,7 +133,9 @@ namespace OKengine {
 			return false;
 		}
 
-		use();
+		if(!inUse){
+			use();
+		}
 		glUniformMatrix4fv(id, 1, GL_FALSE, &val[0][0]);
 		return true;
 	}
@@ -137,7 +147,9 @@ namespace OKengine {
 			return false;
 		}
 
-		use();
+		if(!inUse){  
+			use();
+		}
 		glUniform3fv(id, 1, &val[0]);
 		return true;
 	}
@@ -149,7 +161,9 @@ namespace OKengine {
 			return false;
 		}
 
-		use();
+		if(!inUse){  
+			use();
+		}
 		glUniform1fv(id, 1, &val);
 		return true;
 	}
@@ -161,7 +175,9 @@ namespace OKengine {
 			return false;
 		}
 
-		use();
+		if(!inUse){  
+			use();
+		}
 		glUniform1i(id, val);
 		return true;
 	}
@@ -170,6 +186,11 @@ namespace OKengine {
 	bool shader::use(){
 		OKengine::logger::GetInstance().log("[shader::use] begin", debug_level::DEBUG);
 		glUseProgram(*program);
-		return true;
+		inUse = true;
+		if(current && current != this){
+			current->inUse = false;
+		}
+		current = this;
+		return inUse;
 	}
 }

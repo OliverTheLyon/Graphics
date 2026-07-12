@@ -16,10 +16,15 @@ class light{
 		
 		std::shared_ptr<OKengine::shader> shadow_shader; // ponter to the shader
 														 // for doing shadows.
-		std::shared_ptr<OKengine::shader> regular_shader;
-													
+		std::shared_ptr<OKengine::shader> regular_shader;											
 
 		light_type type; // type of light
+		
+		GLuint depthFBO = 0; // buffer for shadow mapping
+		GLuint depthTex = 0; // output for shadow map
+		// shadow map resolution
+		const unsigned int bufferWidth = 1024; 
+		const unsigned int bufferHeight = 1024;
 
 	public:
 
@@ -121,6 +126,16 @@ class light{
 		  * cone of light to.
 		  **/
 		 void setDirection(glm::vec3 dir);
+
+		 /**
+		  * @brief method to setup for the first pass of rendering (shadowmapping).
+		  **/
+		 void prepareShadows();
+
+		 /**
+		  * @brief method to revert from shadow mapping state
+		  **/
+		 void cleanupShadows();
 
 
 		 //getters
