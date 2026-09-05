@@ -33,6 +33,7 @@ shader* shader::current = nullptr;
 	}
 
 	GLuint shader::compile(string path){
+		OKengine::logger::GetInstance().log("[shader::compile] begin, path: " + path, debug_level::DEBUG);
 		const string vertex_path = path + ".vs.glsl";
 		GLuint program = 0;
 
@@ -111,6 +112,7 @@ shader* shader::current = nullptr;
 		glDeleteShader(vertexId);
 		glDeleteShader(fragmentId);
 
+		OKengine::logger::GetInstance().log("[shader::compile] success, path: " + path + " program id: " + std::to_string(program), debug_level::DEBUG);
 		return program;
 	}
 
@@ -123,6 +125,19 @@ shader* shader::current = nullptr;
 			OKengine::logger::GetInstance().log("[shader::getUniformID] could not get id for uniform: " + name + " (id=" + std::to_string(id) + ")", debug_level::ERROR);
 		}
 		return id;
+	}
+
+
+	int shader::getUniformBlocKIndex(string name){
+		if(!inUse){
+			use();
+		}
+
+		int idx = glGetUniformBlockIndex(*program, name.c_str());
+		if(-1 == idx){
+			OKengine::logger::GetInstance().log("[shader::getUniformBlocKIndex] could not get index for uniform block " + name + " (idx="+ std::to_string(idx)+")", debug_level::ERROR);
+		}
+		return idx;
 	}
 
 
@@ -179,6 +194,37 @@ shader* shader::current = nullptr;
 			use();
 		}
 		glUniform1i(id, val);
+		return true;
+	}
+
+
+	bool shader::setUniform(string name, GLuint val){
+		OKengine::logger::GetInstance().log("[shader::setUniform] (GLuint) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
+		int id = getUniformID(name);
+		if(-1 == id){
+			return false;
+		}
+
+		if(!inUse){
+			use();
+		}
+
+		glUniform1i(id, val);
+		return true;
+	}
+
+	
+	bool shader::setSubroutine(string uniformName, GLenum pipeSect, string routineName){
+		OKengine::logger::GetInstance().log("[shader::setSubroutine] uniform: " + uniformName + ", routine: " + routineName + ", pipeline section: " + std::to_string(pipeSect), debug_level::DEBUG);
+		if(!inUse){
+			use();
+		}
+		GLuint idx = glGetSubroutineIndex(*program, pipeSect, routineName.c_str());
+		if(idx == GL_INVALID_INDEX){
+			OKengine::logger::GetInstance().log("[shader::setSubroutine] could not find subroutine " + routineName + " in pipeline section " + std::to_string(pipeSect), debug_level::ERROR);
+			return false;
+		}
+		glUniformSubroutinesuiv(pipeSect, 1, &idx);
 		return true;
 	}
 

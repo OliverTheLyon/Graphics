@@ -10,23 +10,28 @@
 #pragma once
 
 #include <glm/ext/vector_float3.hpp>
+#include <glm/fwd.hpp>
 #include <glm/glm.hpp>
 
-class camera{
+#include "Utility/transform.hpp"
+
+enum class control_mode {flight, fps};
+
+class camera: private OKengine::transform{
 	private:
 
 		// VARIABLES
-		glm::vec3 position; // affine position
 		glm::vec3 target; // coordinates of the point being 'focussed' on
 		glm::vec3 up; // up vector of the camera, relative to the camera's orientation
 
 		glm::mat4 view; // a matrix computed by this class resulting from the transformations
 						// applied to the class. The 'V' in the MVP matrix.
+		
+		float yaw_ = 0.f;
+		float pitch_ = 0.f;
 
-		/**
-		 * @brief Does the actual work in constructing the view matrix
-		 **/
-		void createViewMatrix();
+		control_mode mode_ = control_mode::flight;
+
 
 	public:
 
@@ -67,18 +72,38 @@ class camera{
 		 **/
 		camera(glm::vec3 spot, glm::vec3 facing, glm::vec3 upwards);
 
+		/**
+		 * @brief method to switch between flight and fps cameras
+		 *
+		 * @param m: the mode to switch to; type control_mode
+		 **/
+		void setMouseMode(control_mode m);
+
+
+		/**
+		 * @brief a method implementing mouselook given basic inputs
+		 *
+		 * @param dx: change in cursor screen x position; type double
+		 * @param dy: change in cursor screen y position; type double
+		 * @param sensitivity: a scaling mouse sensitivity value; type double
+		 **/
+		void look(double dx, double dy, double sensitivity);
 
 		/**
 		 * @brief a method to move the camera by some amount relative to its 
 		 * current position.
 		 *
-		 * @param movement: a vector where each dimension represents how much to
-		 * add to the camera's current position in the respective dimension. e.g:
-		 *	camera_pos_0: [0,0,0]
+		 * @param movement: how much to move the camera with respect to the
+		 * directions in the order forward, up, right. e.g:
+		 *  camera_facing_0 along the x-axis ([1,0,0]), with up being positive 
+		 *  y-axis ([0,1,0]) and right being negative z-axis ([0,0,-1])
+		 *	camera_pos_0: [0,0,0] (absolute coordinates)
 		 *	camera.move([1,2,3])
-		 *	camera_pos_1: [1,2,3]
+		 *	camera_pos_1: [1,2,-3] (absolute coordinates)
+		 *	**change camera facing to forward along y-axis ([0,1,0]), up along 
+		 *	negative x-axis ([-1,0,0]) and right along the negative z-axis ([0,0,-1])
 		 *	camera.move([2,3,5])
-		 *	camera_pos_2: [3,4,8]
+		 *	camera_pos_2: [-1,4,-8] (absolute coordinates)
 		 **/
 		void move(glm::vec3 movement);
 		/**
@@ -95,16 +120,27 @@ class camera{
 		 * @brief a method to roll the camera at it's current position, along a 
 		 * given axis by $radians.
 		 **/
-		void roll(glm::vec3 axis, float radians);
 
+		void roll(glm::vec3 axis, float angle);
 		/**
 		 * @brief get the view matrix from the camera.
 		 **/
-		glm::mat4 viewMatrix();
+		const glm::mat4 & matrix();
 
 		/**
 		 * @brief getter for position
 		 **/
 		glm::vec3 getPosition();
+
+		glm::vec3 getForward();
+		/**
+		 * @brief getter for target
+		 **/
+		glm::vec3 getTarget();
+
+		/**
+		 * @brief getter for up
+		 **/
+		glm::vec3 getUp();
 
 };

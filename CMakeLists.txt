@@ -22,62 +22,37 @@ endif()
 # Copy resources to build directory so relative shader paths work
 file(COPY ${CMAKE_SOURCE_DIR}/resources DESTINATION ${CMAKE_BINARY_DIR})
 
-add_executable(Graphics main.cpp
+# Core engine sources shared by all executables
+set(CORE_SOURCES
     screen.hpp screen.cpp
     scene.hpp scene.cpp
     camera.hpp camera.cpp
     texture.hpp texture.cpp
     shader.hpp shader.cpp
     mesh.hpp mesh.cpp
-    light.hpp light.cpp
     logger.hpp logger.cpp
+    lighting/light.hpp lighting/light.cpp
+    lighting/normalmap.hpp lighting/normalmap.cpp
     Utility/entity.hpp Utility/entity.cpp
     Utility/movable_entity.hpp Utility/movable_entity.cpp
     Utility/errors.hpp Utility/errors.cpp
     Utility/transform.hpp
 )
 
+add_executable(Graphics main.cpp ${CORE_SOURCES})
+add_executable(lightTest lighting/lighttest.cpp ${CORE_SOURCES})
 
-target_include_directories(Graphics PRIVATE
-    ${OPENGL_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIRS}
-    ${GLM_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}
-)
+foreach(target Graphics lightTest)
+    target_include_directories(${target} PRIVATE
+        ${OPENGL_INCLUDE_DIR}
+        ${GLEW_INCLUDE_DIRS}
+        ${GLM_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}
+    )
 
-target_link_libraries(Graphics
-    ${OPENGL_LIBRARIES}
-    GLEW::glew
-    glfw
-)
-
-
-
-
-add_executable(lightTest lighttest.cpp
-    screen.hpp screen.cpp
-    camera.hpp camera.cpp
-    scene.hpp scene.cpp
-    texture.hpp texture.cpp
-    shader.hpp shader.cpp
-    mesh.hpp mesh.cpp
-    light.hpp light.cpp
-    logger.hpp logger.cpp
-    Utility/entity.hpp Utility/entity.cpp
-    Utility/movable_entity.hpp Utility/movable_entity.cpp
-    Utility/errors.hpp Utility/errors.cpp
-    Utility/transform.hpp
-)
-
-target_include_directories(lightTest PRIVATE
-    ${OPENGL_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIRS}
-    ${GLM_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}
-)
-
-target_link_libraries(lightTest
-    ${OPENGL_LIBRARIES}
-    GLEW::glew
-    glfw
-)
+    target_link_libraries(${target}
+        ${OPENGL_LIBRARIES}
+        GLEW::glew
+        glfw
+    )
+endforeach()

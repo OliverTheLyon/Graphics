@@ -2,9 +2,18 @@
 #include <fstream>
 #include <string>
 #include <mutex>
+#include <glm/ext/vector_float3.hpp>
 
 enum class debug_level { INFO=0, DEBUG=1,  WARN=2, ERROR=3};
 namespace OKengine {
+
+	/**
+	 * @brief Formats a glm::vec3 as "(x, y, z)" for embedding in log messages.
+	 **/
+	inline std::string vec3_to_string(const glm::vec3 & v){
+		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
+	}
+
 	class logger{
 
 	private:

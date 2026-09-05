@@ -3,6 +3,7 @@
 #include "shader.hpp"
 #include "camera.hpp"
 #include "texture.hpp"
+#include "scene.hpp"
 #include "logger.hpp"
 
 #include <GLFW/glfw3.h>
@@ -16,7 +17,9 @@ using glm::vec3;
 bool running = true;
 
 void stop(GLFWwindow *w, int key, int scancode, int action, int mods){
+	OKengine::logger::GetInstance().log("[stop] key event, key: " + std::to_string(key) + ", scancode: " + std::to_string(scancode) + ", action: " + std::to_string(action) + ", mods: " + std::to_string(mods), debug_level::DEBUG);
 	if(key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE){
+		OKengine::logger::GetInstance().log("[stop] escape released, stopping main loop", debug_level::INFO);
 		running = false;
 	}
 }
@@ -25,21 +28,24 @@ int main(){
 	OKengine::logger::GetInstance().log("[main] program start", debug_level::INFO);
 
 	OKengine::screen display(800, 600, "Graphics");
-	
+
 	OKengine::shader s("resources/basic");
-	
+
 	OKengine::mesh square("resources/Test.obj");
 	square.setTexture(OKengine::texture("resources/texture.jpg"));
-	square.setShader(std::move(s));
+	square.setShader(s);
 	square.setUniform("colour", glm::vec3(1,0,0));
-	
+
 	vec3 pos(0,0,-4);
 	camera c1(-pos, glm::vec3(0,0,0), vec3(0,1,0));
 
-	glm::mat4 mv = glm::mat4(c1.viewMatrix());
+	glm::mat4 mv = glm::mat4(c1.matrix());
 	glm::mat4 p = glm::perspective(45., 800./600.,0.1,10.); 
 	square.setUniform("mvp", p * mv);
-	display.addMesh(std::move(square));
+
+	scene scn;
+	scn.addMesh(std::move(square));
+	display.setScene(scn);
 
 	display.setKeyCallback(stop);
 	do {

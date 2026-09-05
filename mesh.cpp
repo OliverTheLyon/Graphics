@@ -17,11 +17,12 @@ using std::vector;
 #include "mesh.hpp"
 #include "shader.hpp"
 #include "logger.hpp"
+#include "Utility/errors.hpp"
 
 namespace OKengine {
 	mesh::~mesh(){
+		OKengine::logger::GetInstance().log("[mesh::~mesh] begin, vao: " + std::to_string(vao), debug_level::DEBUG);
 		glDeleteVertexArrays(1, &vao);
-		OKengine::logger::GetInstance().log("[mesh::~mesh] begin", debug_level::DEBUG);
 		glDeleteBuffers(1, &vbo);
 		glDeleteBuffers(1, &ebo);
 		glDeleteBuffers(1, &tbo);
@@ -73,6 +74,7 @@ namespace OKengine {
 
 
 	bool load_obj(string path, obj& outputs){
+		OKengine::logger::GetInstance().log("[load_obj] begin, path: " + path, debug_level::DEBUG);
 		std::ifstream file(path);
 		if(!file.is_open()){
 			OKengine::logger::GetInstance().log("[load_obj] file not found, or is unopenable (path: " + path + ")", debug_level::ERROR);
@@ -91,7 +93,7 @@ namespace OKengine {
 			file.getline(line, 200, '\n');
 			contents = string(line);
 
-			if(contents[0] == '#'){
+			if(contents[0] == '#' || contents[0] == 0){
 				continue;
 			}
 			else if(contents.find("vt",0) == 0){
@@ -210,10 +212,10 @@ namespace OKengine {
 		}
 		file.close();
 
-		{
+		if(!outputs.v_idxs.empty()){
 			size_t count = outputs.v_idxs.size();
 			outputs.vertices.resize(count);
-			for(size_t i = 0; i < count; i++){
+			for(size_t i = 0; i < count; i+= 1){
 				int vi = outputs.v_idxs[i];
 				outputs.vertices[i] = glm::vec3(
 					temp_vert[vi * 3], temp_vert[vi * 3 + 1], temp_vert[vi * 3 + 2]
@@ -245,6 +247,47 @@ namespace OKengine {
 				outputs.n_idxs[i] = i;
 			}
 		}
+
+		if(!outputs.vertices.empty() && !outputs.uvs.empty()){
+			for(int i = 0; i < outputs.n_idxs.size() - 2; i += 1){
+				glm::vec3 pos1 = outputs.vertices[outputs.v_idxs[i]];
+				glm::vec3 pos2 = outputs.vertices[outputs.v_idxs[i + 1]];
+				glm::vec3 pos3 = outputs.vertices[outputs.v_idxs[i + 2]];
+
+				glm::vec2 uv1 = outputs.uvs[outputs.uv_idxs[i]];
+				glm::vec2 uv2 = outputs.uvs[outputs.uv_idxs[i + 1]];
+				glm::vec2 uv3 = outputs.uvs[outputs.uv_idxs[i + 2]];
+
+				glm::vec3 e1 = pos2 - pos1;
+				glm::vec3 e2 = pos3 - pos1;
+
+				glm::vec2 duv1 = uv2 - uv1;
+				glm::vec2 duv2 = uv3 - uv1;
+
+				float fractional = 1./(duv1.x * duv2.y - duv1.y * duv2.x);
+				glm::vec3 tan(
+						duv2.y * e1.x - duv1.y - e2.x,
+						duv2.y * e1.y - duv1.y * e2.y,
+						duv2.y * e1.z - duv1.y * e2.z
+						);
+				tan *= fractional;
+				glm::vec3 bitan(
+						-duv2.x * e1.x + duv1.x * e2.x,
+						-duv2.x * e1.y + duv1.x * e2.y,
+						-duv2.x * e1.z + duv1.x * e2.z
+						);
+				bitan *= fractional;
+
+				outputs.tangents.push_back(tan);
+				outputs.bitangents.push_back(bitan);
+
+			}
+		}
+
+		OKengine::logger::GetInstance().log("[load_obj] success, path: " + path
+			+ " (vertices: " + std::to_string(outputs.vertices.size())
+			+ ", uvs: " + std::to_string(outputs.uvs.size())
+			+ ", normals: " + std::to_string(outputs.normals.size()) + ")", debug_level::DEBUG);
 		return true;
 
 	}
@@ -254,8 +297,8 @@ namespace OKengine {
 
 		obj res;
 		try{
-			if(!load_obj(path, res)){
-				OKengine::logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path, debug_level::ERROR);
+		if(!load_obj(path, res)){
+				OKengine::error("[mesh::mesh] failed to load mesh from .obj file " + path);
 			}
 			glGenVertexArrays(1, &vao);
 			glGenBuffers(1, &vbo);
@@ -275,14 +318,18 @@ namespace OKengine {
 			upload();
 
 		}
-		catch(std::exception e){
+		catch(const std::exception& e){
 			OKengine::logger::GetInstance().log("[mesh::mesh] failed to load mesh from .obj file " + path + "\n\t" + e.what(), debug_level::ERROR);
+			throw;
 		}
 	}
 
 
 	bool mesh::upload(){
-		OKengine::logger::GetInstance().log("[mesh::upload] begin", debug_level::DEBUG);
+		OKengine::logger::GetInstance().log("[mesh::upload] begin (vertices: " + std::to_string(vertex_coords.size())
+			+ ", indices: " + std::to_string(vertex_indices.size())
+			+ ", uvs: " + std::to_string(texture_coords.size())
+			+ ", normals: " + std::to_string(normal_coords.size()) + ")", debug_level::DEBUG);
 		bind();
 		
 		glEnableVertexAttribArray(0);
@@ -303,6 +350,7 @@ namespace OKengine {
 		glBindBuffer(GL_ARRAY_BUFFER, nbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*normal_coords.size(), &normal_coords[0], GL_STATIC_DRAW);
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		OKengine::logger::GetInstance().log("[mesh::upload] success, returning", debug_level::DEBUG);
 		return true;
 	}
 
@@ -313,8 +361,12 @@ namespace OKengine {
 			OKengine::logger::GetInstance().log("[mesh::bind] setting texture", debug_level::DEBUG);
 			tex->bind();
 			if(shader_prog != nullptr){
-				shader_prog->setUniform("tex", 0);
+				shader_prog->setUniform("mat.diffuse", 0);
+				shader_prog->setUniform("mat.specular", 0);
 			}
+		}
+		if(shader_prog != nullptr){
+			shader_prog->setUniform("mat.specularity", specularity_);
 		}
 
 		OKengine::logger::GetInstance().log("[mesh::bind] binding vao (" + std::to_string(vao) + ")", debug_level::DEBUG);
@@ -325,24 +377,30 @@ namespace OKengine {
 
 
 	void mesh::setShader(shader & s){
-		OKengine::logger::GetInstance().log("[mesh::setShader] (rvalue ref)", debug_level::DEBUG);
+		OKengine::logger::GetInstance().log("[mesh::setShader] (lvalue ref)", debug_level::DEBUG);
 		shader_prog = std::make_shared<shader>(s);
 	}
 
 
 	void mesh::setShader(std::shared_ptr<shader> s){
-		OKengine::logger::GetInstance().log("[mesh::setShader] (unique_ptr)", debug_level::DEBUG);
+		OKengine::logger::GetInstance().log("[mesh::setShader] (shared_ptr" + string(s == nullptr ? ", null" : "") + ")", debug_level::DEBUG);
 		shader_prog = s;
 	}
 
 
 	void mesh::setTexture(texture && t){
+		OKengine::logger::GetInstance().log("[mesh::setTexture] (rvalue ref)", debug_level::DEBUG);
 		tex = std::make_unique<texture>(std::move(t));
 		upload();
 	}
 
 
 	void mesh::setTexture(std::unique_ptr<texture> t){
+		if(t == nullptr){
+			OKengine::logger::GetInstance().log("[mesh::setTexture] attempt to set null texture, ignoring", debug_level::WARN);
+			return;
+		}
+		OKengine::logger::GetInstance().log("[mesh::setTexture] (unique_ptr) texture id: " + std::to_string(t->getID()), debug_level::DEBUG);
 		tex = std::move(t);
 		upload();
 	}
@@ -361,6 +419,45 @@ namespace OKengine {
 		OKengine::logger::GetInstance().log("[mesh::draw] completed. success. returning.", debug_level::DEBUG);
 		return true;
 	};
+
+	bool mesh::draw(shader & program){
+		OKengine::logger::GetInstance().log("[mesh::draw(program)] begin", debug_level::DEBUG);
+
+		program.use();
+		program.setUniform("m", model_matrix);
+
+		if(tex != nullptr){
+			tex->bind();
+		}
+		OKengine::logger::GetInstance().log("[mesh::draw(program)] binding vao", debug_level::DEBUG);
+		glBindVertexArray(vao);
+		OKengine::logger::GetInstance().log("[mesh::draw(program)] activating draw call.", debug_level::DEBUG);
+		glDrawElements(GL_TRIANGLES, vertex_indices.size(), GL_UNSIGNED_INT, 0);
+		OKengine::logger::GetInstance().log("[mesh::draw(program)] completed. success. returning.", debug_level::DEBUG);
+		return true;
+	};
+
+	bool mesh::draw(glm::mat4 vp, glm::vec3 viewPos){
+		OKengine::logger::GetInstance().log("[mesh::draw(vp, viewPos)] begin", debug_level::DEBUG);
+		if(shader_prog != nullptr){
+			shader_prog->use();
+			shader_prog->setUniform("mvp", vp * model_matrix);
+			shader_prog->setUniform("model", model_matrix);
+			shader_prog->setUniform("viewPos", viewPos);
+		}
+
+		OKengine::logger::GetInstance().log("[mesh::draw(vp, viewPos)] activating bindings.", debug_level::DEBUG);
+		bind();
+		OKengine::logger::GetInstance().log("[mesh::draw(vp, viewPos)] activating draw call.", debug_level::DEBUG);
+		glDrawElements(GL_TRIANGLES, vertex_indices.size(), GL_UNSIGNED_INT, 0);
+		OKengine::logger::GetInstance().log("[mesh::draw(vp, viewPos)] completed. success. returning.", debug_level::DEBUG);
+		return true;
+	};
+
+	void mesh::setSpecularity(float s){
+		OKengine::logger::GetInstance().log("[mesh::setSpecularity] val: " + std::to_string(s), debug_level::DEBUG);
+		specularity_ = s;
+	}
 
 	bool mesh::operator==(const mesh& other) const{
 		OKengine::logger::GetInstance().log("[mesh::operator==] begin", debug_level::DEBUG);
@@ -382,6 +479,7 @@ namespace OKengine {
 		OKengine::logger::GetInstance().log("[mesh::setUniform] (mat4) name: " + name, debug_level::DEBUG);
 		if(shader_prog == nullptr){
 			OKengine::logger::GetInstance().log("[mesh::setUniform] attempt to set uniform with null shader.", debug_level::ERROR);
+			return false;
 		}
 		return shader_prog->setUniform(name, val);
 	};
@@ -390,6 +488,7 @@ namespace OKengine {
 		OKengine::logger::GetInstance().log("[mesh::setUniform] (vec3) name: " + name, debug_level::DEBUG);
 		if(shader_prog == nullptr){
 			OKengine::logger::GetInstance().log("[mesh::setUniform] attempt to set uniform with null shader.", debug_level::ERROR);
+			return false;
 		}
 		return shader_prog->setUniform(name, val);
 	};
@@ -398,6 +497,7 @@ namespace OKengine {
 		OKengine::logger::GetInstance().log("[mesh::setUniform] (float) name: " + name + " val: " + std::to_string(val), debug_level::DEBUG);
 		if(shader_prog == nullptr){
 			OKengine::logger::GetInstance().log("[mesh::setUniform] attempt to set uniform with null shader.", debug_level::ERROR);
+			return false;
 		}
 		return shader_prog->setUniform(name, val);
 	};

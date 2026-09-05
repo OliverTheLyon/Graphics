@@ -6,7 +6,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
-#include <stdexcept>
+#include "Utility/errors.hpp"
 #include <string>
 
 using std::string;
@@ -32,7 +32,7 @@ namespace OKengine {
 	}
 
 
-	void logger::log(const std::string &msg, debug_level level){
+	void logger::log(const string &msg, debug_level level){
 		//lock for multi threading
 		std::lock_guard<std::mutex> lock(log_mutex_);
 
@@ -40,7 +40,7 @@ namespace OKengine {
 		if (level < detail) return;
 
 		if(!outstream.is_open()){
-			throw std::runtime_error("[logger::log]: output file is not open");
+			throw OKengine::Exception("[logger::log]: output file is not open", OKengine::Severity::Fatal, OKengine::source_location::current());
 		}
 
 		auto now = std::chrono::system_clock::now();
@@ -61,7 +61,7 @@ namespace OKengine {
 
 
 	void logger::SetLevel(debug_level lvl){
-		log("[logger::SetLevel] changing log level", debug_level::INFO);
+		log("[logger::SetLevel] changing log level from " + level_tag(detail) + " (" + std::to_string(static_cast<int>(detail)) + ") to " + level_tag(lvl) + " (" + std::to_string(static_cast<int>(lvl)) + ")", debug_level::INFO);
 		std::lock_guard<std::mutex> lock(log_mutex_); //lock so we don't mutate
 		detail = lvl;
 	}

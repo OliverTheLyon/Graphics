@@ -34,6 +34,8 @@ private:
     glm::quat rotation_{1.0f, 0.0f, 0.0f, 0.0f}; // identity (w, x, y, z)
     glm::vec3 scale_{1.0f};
 
+    // moved these to protected for override use.
+protected:
     // Cache is recomputed on demand, so it stays mutable even on const access.
     mutable glm::mat4 cached_{1.0f};
     mutable bool dirty_{true};
@@ -100,6 +102,9 @@ public:
         }
         return cached_;
     }
+
+    /** @brief Returns true if the cached model matrix is stale and will be rebuilt by the next matrix() call. */
+    bool matrix_is_dirty() const { return dirty_; }
 };
 
 } // namespace OKengine

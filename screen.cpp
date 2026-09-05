@@ -24,7 +24,6 @@ namespace OKengine {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 		window.reset(glfwCreateWindow(w, h, title.c_str(), NULL, NULL));
 
 		if(window == nullptr){
@@ -44,7 +43,7 @@ namespace OKengine {
 		}
 
 		glfwSetInputMode(window.get(), GLFW_STICKY_KEYS, GL_TRUE);
-		glClearColor(1, 1, 1, 1);
+		glClearColor(0, 0, 0, 1);
 		glEnable(GL_BLEND);
 
 		glEnable(GL_DEPTH_TEST);
@@ -53,14 +52,19 @@ namespace OKengine {
 		glEnable(GL_CULL_FACE);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glViewport(0,0,w,h);
+		
+		glfwSetInputMode(window.get(), GLFW_STICKY_KEYS, GL_TRUE);
+		glfwSetInputMode(window.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		OKengine::logger::GetInstance().log("[screen::init] initialization complete, window handle set, viewport " + std::to_string(w) + "x" + std::to_string(h) + ", title '" + title + "'", debug_level::DEBUG);
 	}
 
-	screen::screen(int w, int h){
+	screen::screen(int w, int h): width(w), height(h){
 		OKengine::logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + " and h: " + std::to_string(h), debug_level::DEBUG);
 		init(w, h, "No Title");
 	}
 
-	screen::screen(int w, int h, string title){
+	screen::screen(int w, int h, string title): width(w), height(h){
 		OKengine::logger::GetInstance().log("[screen::screen] constructor entered with args w: " + std::to_string(w) + ", h: " + std::to_string(h) + ", and title '"+ title +"'", debug_level::DEBUG);
 		init(w, h, title);
 	}
@@ -71,7 +75,8 @@ namespace OKengine {
 	}
 
 	void screen::draw(){
-		curScene->renderScene();
+		OKengine::logger::GetInstance().log("[screen::draw] rendering scene at " + std::to_string(width) + "x" + std::to_string(height), debug_level::DEBUG);
+		curScene->renderScene(width, height);
 	}
 
 	void screen::exitDrawState(){
@@ -81,10 +86,28 @@ namespace OKengine {
 	}
 
 	void screen::setKeyCallback(GLFWkeyfun callback){
+		OKengine::logger::GetInstance().log("[screen::setKeyCallback] registering key callback", debug_level::DEBUG);
 		glfwSetKeyCallback(window.get(), callback);
 	}
 
+	void screen::setMouseCallback(GLFWcursorposfun callback){
+		OKengine::logger::GetInstance().log("[screen::setMouseCallback] registering cursor position callback", debug_level::DEBUG);
+		glfwSetCursorPosCallback(window.get(), callback);
+	}
+
 	void screen::setScene(scene s){
+		OKengine::logger::GetInstance().log("[screen::setScene] setting current scene", debug_level::DEBUG);
 		curScene = std::make_unique<scene>(s);
 	}
+
+	int screen::getHeight(){
+		OKengine::logger::GetInstance().log("[screen::getHeight] returning " + std::to_string(height), debug_level::DEBUG);
+		return height;
+	}
+
+	int screen::getWidth(){
+		OKengine::logger::GetInstance().log("[screen::getWidth] returning " + std::to_string(width), debug_level::DEBUG);
+		return width;
+	}
+
 }

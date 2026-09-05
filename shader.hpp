@@ -60,6 +60,12 @@ namespace OKengine {
 		 **/
 		int getUniformID(std::string name);
 		/**
+		 * @brief a method to get the index of a uniform block
+		 *
+		 * @param name: the string which names the uniform block; case sensitive
+		 **/
+		int getUniformBlocKIndex(std::string name);
+		/**
 		 * @brief A method to set the value of a mat4 uniform in the shader. 
 		 * Note: needs only be called once for a given value of a uniform; 
 		 * subsequent draw calls will use the value.
@@ -92,6 +98,22 @@ namespace OKengine {
 		 * @param val: the value to set the uniform to.
 		 **/
 		bool setUniform(std::string name, int val);
+		/**
+		 * @brief A method to set a GLuint value in the shader.
+		 *
+		 * @param name: the name of the uniform; case sensitive; string type
+		 * @param val: the value to set the uniform to; GLuint type.
+		 **/
+		bool setUniform(std::string name, GLuint val);
+
+		/**
+		 * @brief a method to set a subroutine in a given part of the shader pipeline.
+		 * @param uniformName: a string with the name of the suboutine uniform
+		 * @param pipeSect: the section of the pipeline the routine lives in.
+		 * @param routineName: the name of the subroutine.
+		 * returns false if the routine is not found, or setting it failed
+		 **/
+		bool setSubroutine(std::string uniformName, GLenum pipeSect, std::string routineName);
 
 
 	};

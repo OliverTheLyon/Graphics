@@ -1,10 +1,12 @@
 
 #pragma once
 
+#include <glm/ext/matrix_float4x4.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 #include <memory>
 
-#include "shader.hpp"
+#include "../shader.hpp"
 
 enum light_type {spotlight, ambientlight, pointlight};
 
@@ -14,6 +16,15 @@ class light{
 		glm::vec3 position; // (x,y,z) position
 		glm::vec3 direction; // (x,y,z) center of the cone of light. Optional
 		
+		glm::vec3 amb = {0.25, 0.25, 0.25};
+		glm::vec3 dif = {0.5, 0.5, 0.5};
+		glm::vec3 spec = {0.75, 0.75, 0.75};
+
+		glm::vec3 factors = {1., 2., 3.};
+
+		float innerCutoff = 25;
+	    float outerCutoff = 30;	
+
 		std::shared_ptr<OKengine::shader> shadow_shader; // ponter to the shader
 														 // for doing shadows.
 		std::shared_ptr<OKengine::shader> regular_shader;											
@@ -25,6 +36,13 @@ class light{
 		// shadow map resolution
 		const unsigned int bufferWidth = 1024; 
 		const unsigned int bufferHeight = 1024;
+
+		glm::mat4 proj;
+		glm::mat4 view;
+
+		bool dirty_ = true;
+
+		void recomputeMatrices();
 
 	public:
 
@@ -54,6 +72,8 @@ class light{
 		 * @param dir: [optional] direction for the light, defaults to [1,0,0]
 		 **/ 
 		light(light_type t, glm::vec3 pos=glm::vec3(1.0,0,0), glm::vec3 dir=glm::vec3(1.0,0,0));
+
+		bool operator ==(const light & other);
 
 		/**
 		 * @brief Setter for the shadow shader
@@ -128,6 +148,52 @@ class light{
 		 void setDirection(glm::vec3 dir);
 
 		 /**
+		  * @brief setter for the ambient component of the lighting.
+		  *
+		  * @param amb: the new value (which shall completely replace the old value)
+		  * of the ambient component; glm::vec3 type.
+		  **/
+		 void setAmbient(glm::vec3 amb);
+		 /**
+		  * @brief setter for the specular component of the lighting.
+		  *
+		  * @param spec: the new value (which shall completely replace the old value)
+		  * of the specular component; glm::vec3 type.
+		  **/
+		 void setSpecular(glm::vec3 spec);
+		 /**
+		  * @brief setter for the diffuse component of the lighting.
+		  *
+		  * @param dif: the new value (which shall completely replace the old value)
+		  * of the diffuse component; glm::vec3 type.
+		  **/
+		 void setDiffuse(glm::vec3 dif);
+
+		 /**
+		  * @brief setter for the attenuation factors (constant, linear, quadratic).
+		  *
+		  * @param f: vec3 with (constant, linear, quadratic) factors.
+		  **/
+		 void setFactors(glm::vec3 f);
+		 /**
+		  * @brief setter for the inner cutoff angle of a spotlight.
+		  *
+		  * @param c: the inner cutoff angle in degrees.
+		  **/
+		 void setCutoff(float c);
+		 /**
+		  * @brief setter for the outer cutoff angle of a spotlight.
+		  *
+		  * @param c: the outer cutoff angle in degrees.
+		  **/
+		 void setOuterCutoff(float c);
+
+		 /**
+		  * @brief method to bind the relevant uniforms for lighting
+		  **/
+		 void bind();
+
+		 /**
 		  * @brief method to setup for the first pass of rendering (shadowmapping).
 		  **/
 		 void prepareShadows();
@@ -137,10 +203,18 @@ class light{
 		  **/
 		 void cleanupShadows();
 
+		 /**
+		  * @brief: checker for whether a shadow shader is held.
+		  *
+		  * @returns: true if shadow shader is present, false otherwise.
+		  **/
+		 bool hasShadowShader();
 
 		 //getters
 		 light_type getType();
 		 glm::vec3 getPosition();
 		 glm::vec3 getDirection();
+		 OKengine::shader& shadowShader();
+		 GLuint getShadowMap();
 
 };

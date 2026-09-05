@@ -42,12 +42,18 @@ namespace OKengine {
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		stbi_image_free(data);
+
+		OKengine::logger::GetInstance().log("[texture::texture] success, path: " + path
+			+ " (width: " + std::to_string(width)
+			+ ", height: " + std::to_string(height)
+			+ ", channels: " + std::to_string(chanels)
+			+ ", id: " + std::to_string(id) + ")", debug_level::DEBUG);
 	}
 
 
-	void texture::bind(){
-		OKengine::logger::GetInstance().log("[texture::bind] begin", debug_level::DEBUG);
-		glActiveTexture(GL_TEXTURE0);
+	void texture::bind(GLuint unit){
+		OKengine::logger::GetInstance().log("[texture::bind] begin, unit: " + std::to_string(unit) + ", id: " + std::to_string(id), debug_level::DEBUG);
+		glActiveTexture(unit);
 		glBindTexture(GL_TEXTURE_2D, id);
 	}
 }

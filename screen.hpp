@@ -19,6 +19,9 @@ namespace OKengine {
 
 		std::unique_ptr<scene> curScene;
 
+		int width;
+		int height;
+
 		/**
 		 * @brief Code common to the screen constructors.
 		 **/
@@ -70,9 +73,24 @@ namespace OKengine {
 		void setKeyCallback(GLFWkeyfun callback);
 
 		/**
+		 * @brief A method to link cursor events to functions. The method 
+		 * should have parameters GLFWwindow*, double xpos, and double ypos; 
+		 * where the x and y pos values are the cursor position in the window
+		 *
+		 * @param callback: the method to be called. 
+		 **/
+		void setMouseCallback(GLFWcursorposfun callback);
+		/**
 		 * @brief A method to set the current scene
 		 *
 		 * @param s: the new scene.
 		 **/
 		void setScene(scene s);
-};
+
+		/**
+		 * @brief getters
+		 **/
+		int getWidth();
+		int getHeight();
+	};
+}

@@ -22,6 +22,9 @@ namespace OKengine {
 
 		std::vector<glm::vec2> uvs;
 		std::vector<unsigned int> uv_idxs;
+
+		std::vector<glm::vec3> tangents;
+		std::vector<glm::vec3> bitangents;
 	};
 	typedef struct obj obj;
 
@@ -37,6 +40,9 @@ namespace OKengine {
 		std::vector<glm::vec3> normal_coords;
 		std::vector<GLuint> normal_indices;
 
+		std::vector<glm::vec3> tans;
+		std::vector<glm::vec3> bitans;
+		
 		std::unique_ptr<texture> tex;
 		std::shared_ptr<shader> shader_prog;
 
@@ -47,6 +53,8 @@ namespace OKengine {
 		GLuint nbo; // normal buffer
 
 		glm::mat4 model_matrix;
+
+		float specularity_ = 32.0f;
 
 		/**
 		 * @brief A method to send the mesh data to the GPU, i.e. set the buffers.
@@ -131,6 +139,31 @@ namespace OKengine {
 		 * the mesh.
 		 **/
 		bool draw();
+
+		/**
+		 * @brief A method to setup and call the necessary functions to display
+		 * the mesh using a shader program that is not the mesh instance's 'own'.
+		 *
+		 * @param program: a reference to the shader to use instead of the internal
+		 * shader; shader type
+		 **/
+		bool draw(shader & program);
+
+		/**
+		 * @brief A method to draw the mesh with the mesh's own shader, setting
+		 * MVP and viewPos uniforms from the provided matrices and camera position.
+		 *
+		 * @param vp: the combined view-projection matrix (projection * view).
+		 * @param viewPos: the camera position in world space.
+		 **/
+		bool draw(glm::mat4 vp, glm::vec3 viewPos);
+
+		/**
+		 * @brief Sets the specularity (shininess) of the material.
+		 *
+		 * @param s: the specular exponent value.
+		 **/
+		void setSpecularity(float s);
 
 		/**
 		 * @brief comparison operator. Only cares about the affine position of the

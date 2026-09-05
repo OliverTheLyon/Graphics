@@ -32,8 +32,10 @@ namespace OKengine {
 		
 		/**
 		 * @brief a method to bind the texture for use with the shader. 
+		 *
+		 * @param unit: the texture to be bound to; optional; GLuint
 		 **/
-		void bind();
+		void bind(GLuint unit = GL_TEXTURE0);
 		/**
 		 * @brief A method to get the shader ID of the texture.
 		 **/
